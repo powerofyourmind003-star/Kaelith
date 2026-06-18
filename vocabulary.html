@@ -1,0 +1,3986 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P - So'zlar Lug'ati</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #2d3748; }
+  header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white; padding: 30px 20px; text-align: center;
+  }
+  header h1 { font-size: 2.2em; margin-bottom: 8px; }
+  header p { opacity: 0.85; font-size: 1.1em; }
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 12px;
+    padding: 20px; background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    position: sticky; top: 0; z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  .controls input {
+    padding: 10px 18px; border: 2px solid #e2e8f0;
+    border-radius: 25px; font-size: 1em; width: 280px;
+    outline: none; transition: border 0.2s;
+  }
+  .controls input:focus { border-color: #667eea; }
+  .controls select {
+    padding: 10px 16px; border: 2px solid #e2e8f0;
+    border-radius: 25px; font-size: 0.95em;
+    outline: none; background: white; cursor: pointer;
+  }
+  .counter {
+    background: #667eea; color: white;
+    padding: 6px 16px; border-radius: 25px; font-size: 0.9em;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 20px; padding: 24px;
+    max-width: 1600px; margin: 0 auto;
+  }
+  .card {
+    background: white; border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.13); }
+  .card-header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid #f0f4f8;
+    display: flex; align-items: flex-start; justify-content: space-between;
+  }
+  .word-info { flex: 1; }
+  .word { font-size: 1.7em; font-weight: 700; color: #2d3748; }
+  .pronunciation {
+    font-size: 0.9em; color: #718096; margin-top: 3px;
+    font-style: italic;
+  }
+  .translation {
+    font-size: 1.05em; color: #667eea; font-weight: 600; margin-top: 5px;
+  }
+  .badge {
+    display: inline-block; padding: 4px 12px;
+    border-radius: 20px; font-size: 0.78em; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;
+    margin-left: 10px; margin-top: 4px;
+  }
+  .noun { background: #bee3f8; color: #2b6cb0; }
+  .verb { background: #c6f6d5; color: #276749; }
+  .adjective { background: #fefcbf; color: #975a16; }
+  .adverb { background: #fed7e2; color: #97266d; }
+  .pronoun { background: #e9d8fd; color: #553c9a; }
+  .preposition { background: #fbd38d; color: #7b341e; }
+  .conjunction { background: #b2f5ea; color: #234e52; }
+  .abbreviation { background: #e2e8f0; color: #4a5568; }
+  .card-body { padding: 16px 20px 20px; }
+  .section-title {
+    font-size: 0.78em; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: #a0aec0; margin: 12px 0 6px;
+  }
+  .examples { list-style: none; }
+  .examples li {
+    padding: 6px 0 6px 14px; border-left: 3px solid #667eea;
+    margin-bottom: 6px; font-size: 0.92em; line-height: 1.5; color: #4a5568;
+  }
+  .examples li em { color: #667eea; font-style: normal; font-weight: 600; }
+  .usage {
+    background: #f7fafc; border-radius: 10px;
+    padding: 10px 14px; font-size: 0.9em;
+    color: #4a5568; line-height: 1.5;
+  }
+  .synonyms { display: flex; flex-wrap: wrap; gap: 6px; }
+  .syn-tag {
+    background: #ebf4ff; color: #3182ce;
+    padding: 3px 10px; border-radius: 15px; font-size: 0.82em; font-weight: 500;
+  }
+  .no-results {
+    text-align: center; padding: 60px 20px;
+    grid-column: 1 / -1; color: #a0aec0; font-size: 1.2em;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>📚 P — So'zlar Lug'ati</h1>
+  <p>Har bir so'z: tarjima · talaffuz · misollar · sinonimlar</p>
+</header>
+<div class="controls">
+  <input type="text" id="searchInput" placeholder="🔍 So'z qidirish...">
+  <select id="filterType" onchange="filterCards()">
+    <option value="all">Barcha turkumlar</option>
+    <option value="noun">Ot (Noun)</option>
+    <option value="verb">Fe'l (Verb)</option>
+    <option value="adjective">Sifat (Adjective)</option>
+    <option value="adverb">Ravish (Adverb)</option>
+    <option value="abbreviation">Qisqartma</option>
+  </select>
+  <span class="counter" id="counter">0 ta so'z</span>
+</div>
+<div class="grid" id="wordGrid"></div>
+<script>
+const words = [
+
+
+  {
+    word: "pace",
+    pronunciation: "/peɪs/",
+    translation: "tezlik, qadam, sur'at",
+    type: "noun",
+    usage: "Biror narsaning harakatlanish tezligi yoki sur'ati; shuningdek fe'l sifatida «yurish» ma'nosida ishlatiladi.",
+    examples: [
+      "He walked at a fast <em>pace</em> to catch the bus.",
+      "The student couldn't keep <em>pace</em> with the rest of the class.",
+      "The teacher slowed the <em>pace</em> of the lesson for new students.",
+      "She set a comfortable <em>pace</em> during the morning jog.",
+      "Economic growth is picking up <em>pace</em> this year."
+    ],
+    synonyms: ["speed", "rate", "tempo", "rhythm", "stride"]
+  },
+  {
+    word: "pack",
+    pronunciation: "/pæk/",
+    translation: "to'plam, pochta, yig'moq",
+    type: "noun",
+    usage: "Narsa yoki odamlar guruhi; shuningdek narsalarni yig'ish fe'li sifatida ham ishlatiladi.",
+    examples: [
+      "She put everything in a <em>pack</em> before the hike.",
+      "A <em>pack</em> of wolves was spotted near the village.",
+      "Don't forget to <em>pack</em> your toothbrush for the trip.",
+      "He bought a <em>pack</em> of chewing gum at the store.",
+      "The students <em>packed</em> into the small classroom."
+    ],
+    synonyms: ["bundle", "group", "bag", "collection", "set"]
+  },
+  {
+    word: "package",
+    pronunciation: "/ˈpækɪdʒ/",
+    translation: "paket, quti, to'plam",
+    type: "noun",
+    usage: "Biror narsa qadoqlangan quti yoki xalta; shuningdek dasturiy ta'minotda paket ma'nosida.",
+    examples: [
+      "A <em>package</em> arrived at the door this morning.",
+      "The software <em>package</em> includes all the tools you need.",
+      "She wrapped the gift in a beautiful <em>package</em>.",
+      "The travel <em>package</em> includes hotel and flights.",
+      "He ordered a <em>package</em> online and it came in two days."
+    ],
+    synonyms: ["parcel", "bundle", "kit", "box", "deal"]
+  },
+  {
+    word: "page",
+    pronunciation: "/peɪdʒ/",
+    translation: "sahifa, bet",
+    type: "noun",
+    usage: "Kitob yoki hujjatning bir tomoni; internetda veb-sahifa; shuningdek chaqirmoq ma'nosida fe'l.",
+    examples: [
+      "Please turn to <em>page</em> 45 in your textbook.",
+      "She read every <em>page</em> of the novel in one night.",
+      "The website's main <em>page</em> was redesigned last week.",
+      "He <em>paged</em> through the magazine quickly.",
+      "Write the answer at the bottom of the <em>page</em>."
+    ],
+    synonyms: ["sheet", "leaf", "folio", "side", "screen"]
+  },
+  {
+    word: "pain",
+    pronunciation: "/peɪn/",
+    translation: "og'riq, alam, azob",
+    type: "noun",
+    usage: "Jismoniy yoki ruhiy og'riq hissi; qiyin vaziyat yoki muammo.",
+    examples: [
+      "She felt a sharp <em>pain</em> in her knee after the fall.",
+      "The <em>pain</em> of losing a loved one never fully goes away.",
+      "He took medicine to relieve the <em>pain</em>.",
+      "Learning a language takes effort but the <em>pain</em> is worth it.",
+      "The doctor asked him to describe the <em>pain</em> on a scale of one to ten."
+    ],
+    synonyms: ["ache", "hurt", "agony", "discomfort", "suffering"]
+  },
+  {
+    word: "painful",
+    pronunciation: "/ˈpeɪnfəl/",
+    translation: "og'riqli, alamli",
+    type: "adjective",
+    usage: "Og'riq keltiradigan yoki juda qiyin bo'lgan holat yoki narsa.",
+    examples: [
+      "The injection was <em>painful</em> but necessary.",
+      "It was <em>painful</em> to watch him struggle with the problem.",
+      "She shared a <em>painful</em> memory from her childhood.",
+      "Recovery from the surgery was slow and <em>painful</em>.",
+      "Admitting you are wrong can be <em>painful</em> but important."
+    ],
+    synonyms: ["sore", "agonizing", "hurtful", "distressing", "uncomfortable"]
+  },
+  {
+    word: "paint",
+    pronunciation: "/peɪnt/",
+    translation: "bo'yoq; bo'yamoq, rasm chizmoq",
+    type: "verb",
+    usage: "Yuzaga bo'yoq surtmoq yoki rasm yaratmoq; shuningdek ot sifatida bo'yoq moddasi.",
+    examples: [
+      "They decided to <em>paint</em> the living room blue.",
+      "She loves to <em>paint</em> landscapes on weekends.",
+      "The artist used oil <em>paint</em> for the portrait.",
+      "He <em>painted</em> the fence to protect it from rust.",
+      "The children <em>painted</em> beautiful pictures at school."
+    ],
+    synonyms: ["color", "coat", "brush", "depict", "tint"]
+  },
+  {
+    word: "painter",
+    pronunciation: "/ˈpeɪntər/",
+    translation: "rassом, bo'yoqchi",
+    type: "noun",
+    usage: "Rasm chizuvchi san'atkor yoki binoларni bo'yaydigan ishchi.",
+    examples: [
+      "The <em>painter</em> finished the portrait in three days.",
+      "We hired a <em>painter</em> to redo the walls of the house.",
+      "Vincent van Gogh was a famous Dutch <em>painter</em>.",
+      "The <em>painter</em> mixed different colors to get the right shade.",
+      "She became a professional <em>painter</em> after art school."
+    ],
+    synonyms: ["artist", "muralist", "illustrator", "decorator", "colorist"]
+  },
+  {
+    word: "painting",
+    pronunciation: "/ˈpeɪntɪŋ/",
+    translation: "rasm, surat, bo'yash",
+    type: "noun",
+    usage: "Bo'yoq yordamida yaratilgan san'at asari yoki bo'yash jarayoni.",
+    examples: [
+      "The <em>painting</em> sold for millions at the auction.",
+      "She hung a new <em>painting</em> above the fireplace.",
+      "He enjoys <em>painting</em> as a hobby after work.",
+      "The museum has an impressive collection of modern <em>paintings</em>.",
+      "That <em>painting</em> took the artist six months to complete."
+    ],
+    synonyms: ["artwork", "canvas", "picture", "illustration", "mural"]
+  },
+  {
+    word: "pair",
+    pronunciation: "/pɛr/",
+    translation: "juft, pora",
+    type: "noun",
+    usage: "Birga ishlatiladigan ikki narsa yoki ikki kishi; ham ot, ham fe'l sifatida ishlatiladi.",
+    examples: [
+      "She bought a new <em>pair</em> of shoes.",
+      "The two students worked as a <em>pair</em> on the project.",
+      "I need a <em>pair</em> of scissors to cut this paper.",
+      "They make a great <em>pair</em> — always helping each other.",
+      "He lost one sock and ruined the whole <em>pair</em>."
+    ],
+    synonyms: ["couple", "duo", "set", "brace", "twosome"]
+  },
+
+
+  {
+    word: "pale",
+    pronunciation: "/peɪl/",
+    translation: "oqish, rangpar, rangi o'chgan",
+    type: "adjective",
+    usage: "Och rangli yoki yuzda qon ko'rinmaydigan holat; shuningdek sarg'ish-oq rang.",
+    examples: [
+      "She looked <em>pale</em> after hearing the bad news.",
+      "The winter sun gave a <em>pale</em> light in the morning.",
+      "He turned <em>pale</em> when he saw the accident.",
+      "The walls were painted a <em>pale</em> shade of yellow.",
+      "Her <em>pale</em> skin meant she needed strong sunscreen."
+    ],
+    synonyms: ["light", "faint", "wan", "washed-out", "colorless"]
+  },
+  {
+    word: "Palestinian",
+    pronunciation: "/ˌpæləˈstɪniən/",
+    translation: "Falastin (kishisi/mamlakatiga oid)",
+    type: "adjective",
+    usage: "Falastin xalqi, davlati yoki madaniyatiga tegishli.",
+    examples: [
+      "The <em>Palestinian</em> people have a rich cultural heritage.",
+      "She met a <em>Palestinian</em> artist at the exhibition.",
+      "The <em>Palestinian</em> issue remains a major global concern.",
+      "He wrote a book about <em>Palestinian</em> history.",
+      "The <em>Palestinian</em> delegation spoke at the United Nations."
+    ],
+    synonyms: ["from Palestine", "Arab (context-specific)"]
+  },
+  {
+    word: "palm",
+    pronunciation: "/pɑːm/",
+    translation: "kaft, xurmo daraxti",
+    type: "noun",
+    usage: "Qo'lning ichki tomoni (kaft); shuningdek xurmo yoki palma daraxti.",
+    examples: [
+      "She held the small bird in the <em>palm</em> of her hand.",
+      "They walked under tall <em>palm</em> trees on the beach.",
+      "He wiped his sweaty <em>palms</em> before the presentation.",
+      "The coin was so tiny it fit in his <em>palm</em>.",
+      "The resort was surrounded by beautiful <em>palm</em> trees."
+    ],
+    synonyms: ["hand", "inner hand", "palm tree", "coconut palm"]
+  },
+  {
+    word: "pan",
+    pronunciation: "/pæn/",
+    translation: "qozon, tova, tovoq",
+    type: "noun",
+    usage: "Ovqat pishirish uchun ishlatiladigan yassi idish; shuningdek kamera harakati ma'nosida.",
+    examples: [
+      "She fried the eggs in a <em>pan</em>.",
+      "The director asked the cameraman to <em>pan</em> left.",
+      "He found a large <em>pan</em> in the kitchen cabinet.",
+      "The sauce burned because she left it in the <em>pan</em> too long.",
+      "Use a non-stick <em>pan</em> to make pancakes easily."
+    ],
+    synonyms: ["pot", "skillet", "frying pan", "saucepan", "wok"]
+  },
+  {
+    word: "panel",
+    pronunciation: "/ˈpænəl/",
+    translation: "panel, guruh, qoplag'ich",
+    type: "noun",
+    usage: "Mutaxassislar guruhi; shuningdek devor, eshik yoki ekrandagi tekis qism.",
+    examples: [
+      "A <em>panel</em> of judges will evaluate the competition.",
+      "She replaced the broken <em>panel</em> in the door.",
+      "The solar <em>panel</em> on the roof generates electricity.",
+      "The news show featured a <em>panel</em> of experts.",
+      "He clicked on the control <em>panel</em> to change the settings."
+    ],
+    synonyms: ["board", "committee", "group", "section", "surface"]
+  },
+  {
+    word: "pant",
+    pronunciation: "/pænt/",
+    translation: "hansiramoq; shimlar",
+    type: "verb",
+    usage: "Tez-tez nafas olmoq (odatda charchaganda); ko'plikda «pants» — shim.",
+    examples: [
+      "The dog began to <em>pant</em> after running in the heat.",
+      "He was <em>panting</em> by the time he reached the top of the stairs.",
+      "She <em>panted</em> heavily after the long sprint.",
+      "The runner was <em>panting</em> at the finish line.",
+      "He wore blue <em>pants</em> to the interview."
+    ],
+    synonyms: ["gasp", "huff", "breathe hard", "wheeze"]
+  },
+  {
+    word: "paper",
+    pronunciation: "/ˈpeɪpər/",
+    translation: "qog'oz, maqola, gazeta",
+    type: "noun",
+    usage: "Yozish yoki chop etish uchun ishlatiladigan material; ilmiy maqola yoki gazeta.",
+    examples: [
+      "She wrote her name on a piece of <em>paper</em>.",
+      "The professor published a research <em>paper</em> last month.",
+      "He reads the morning <em>paper</em> with his coffee.",
+      "Please print the document on plain <em>paper</em>.",
+      "The student submitted her term <em>paper</em> on time."
+    ],
+    synonyms: ["document", "sheet", "article", "journal", "report"]
+  },
+  {
+    word: "parent",
+    pronunciation: "/ˈpɛrənt/",
+    translation: "ota-ona, ota yoki ona",
+    type: "noun",
+    usage: "Farzandning onasi yoki otasi; shuningdek asosiy tashkilot ma'nosida.",
+    examples: [
+      "Her <em>parent</em> came to the school meeting.",
+      "Every <em>parent</em> wants the best for their child.",
+      "The <em>parent</em> company opened a new branch in Asia.",
+      "He became a <em>parent</em> for the first time last year.",
+      "Good <em>parents</em> support their children's dreams."
+    ],
+    synonyms: ["mother", "father", "guardian", "caregiver", "ancestor"]
+  },
+  {
+    word: "park",
+    pronunciation: "/pɑːrk/",
+    translation: "bog', park; to'xtatmoq (mashina)",
+    type: "noun",
+    usage: "Yashil dam olish joyi; shuningdek avtomobilni to'xtatmoq ma'nosida fe'l.",
+    examples: [
+      "We had a picnic in the <em>park</em> on Sunday.",
+      "He couldn't find a place to <em>park</em> his car.",
+      "The children love playing in the <em>park</em> near our house.",
+      "She <em>parked</em> the car in front of the building.",
+      "The national <em>park</em> is home to rare wildlife."
+    ],
+    synonyms: ["garden", "green", "reserve", "lot", "recreation area"]
+  },
+  {
+    word: "parking",
+    pronunciation: "/ˈpɑːrkɪŋ/",
+    translation: "avtomobil to'xtatish joyi, parkovka",
+    type: "noun",
+    usage: "Mashina to'xtatish joyi yoki jarayoni.",
+    examples: [
+      "There is free <em>parking</em> behind the mall.",
+      "Finding <em>parking</em> in the city center is very difficult.",
+      "The hotel offers free <em>parking</em> for guests.",
+      "No <em>parking</em> is allowed on this side of the street.",
+      "She paid for two hours of <em>parking</em>."
+    ],
+    synonyms: ["lot", "garage", "space", "bay", "car park"]
+  },
+
+
+  {
+    word: "part",
+    pronunciation: "/pɑːrt/",
+    translation: "qism, bo'lim, rol",
+    type: "noun",
+    usage: "Bir narsaning bo'lagi yoki qismi; ot, fe'l va ravish sifatida ishlatiladi.",
+    examples: [
+      "This is the most important <em>part</em> of the exam.",
+      "She played the <em>part</em> of the queen in the play.",
+      "Which <em>part</em> of the city do you live in?",
+      "He did his <em>part</em> to help the team succeed.",
+      "The broken <em>part</em> needs to be replaced immediately."
+    ],
+    synonyms: ["section", "piece", "portion", "segment", "role"]
+  },
+  {
+    word: "participant",
+    pronunciation: "/pɑːrˈtɪsɪpənt/",
+    translation: "ishtirokchi, qatnashuvchi",
+    type: "noun",
+    usage: "Biror faoliyat yoki tadbirda qatnashadigan kishi.",
+    examples: [
+      "Each <em>participant</em> received a certificate.",
+      "The survey had over 500 <em>participants</em>.",
+      "Every <em>participant</em> in the contest must follow the rules.",
+      "She was the youngest <em>participant</em> in the program.",
+      "The <em>participants</em> gathered in the conference hall."
+    ],
+    synonyms: ["member", "contributor", "attendee", "player", "entrant"]
+  },
+  {
+    word: "participate",
+    pronunciation: "/pɑːrˈtɪsɪpeɪt/",
+    translation: "qatnashmoq, ishtirok etmoq",
+    type: "verb",
+    usage: "Biror faoliyatda faol qatnashmoq.",
+    examples: [
+      "All students are encouraged to <em>participate</em> in class.",
+      "She decided to <em>participate</em> in the marathon.",
+      "He didn't <em>participate</em> because he was sick.",
+      "Everyone is welcome to <em>participate</em> in the discussion.",
+      "You must register to <em>participate</em> in the competition."
+    ],
+    synonyms: ["join", "take part", "engage", "contribute", "attend"]
+  },
+  {
+    word: "participation",
+    pronunciation: "/pɑːrˌtɪsɪˈpeɪʃən/",
+    translation: "qatnashish, ishtirok",
+    type: "noun",
+    usage: "Biror ish yoki faoliyatda qatnashish holati.",
+    examples: [
+      "Active <em>participation</em> improves learning.",
+      "Her <em>participation</em> in the project was very valuable.",
+      "The event was a success thanks to community <em>participation</em>.",
+      "Student <em>participation</em> is a key part of the class grade.",
+      "He earned an award for his <em>participation</em> in the volunteer program."
+    ],
+    synonyms: ["involvement", "engagement", "contribution", "attendance", "inclusion"]
+  },
+  {
+    word: "particular",
+    pronunciation: "/pərˈtɪkjʊlər/",
+    translation: "maxsus, alohida, aniq",
+    type: "adjective",
+    usage: "Boshqalardan ajralib turadigan yoki aniq biror narsa; talabchan ma'nosida ham ishlatiladi.",
+    examples: [
+      "Is there a <em>particular</em> reason you chose this school?",
+      "She has a <em>particular</em> way of solving problems.",
+      "Pay attention to this <em>particular</em> point in the lesson.",
+      "He is very <em>particular</em> about what he eats.",
+      "In this <em>particular</em> case, the rules are different."
+    ],
+    synonyms: ["specific", "special", "certain", "distinct", "precise"]
+  },
+  {
+    word: "particularly",
+    pronunciation: "/pərˈtɪkjʊlərli/",
+    translation: "ayniqsa, xususan",
+    type: "adverb",
+    usage: "Boshqalardan ko'ra ko'proq; alohida ta'kidlash uchun.",
+    examples: [
+      "I'm not <em>particularly</em> fond of spicy food.",
+      "She did <em>particularly</em> well on the math exam.",
+      "He was <em>particularly</em> interested in history.",
+      "The weather was <em>particularly</em> cold this winter.",
+      "This problem is <em>particularly</em> common among young learners."
+    ],
+    synonyms: ["especially", "specifically", "notably", "in particular", "especially"]
+  },
+  {
+    word: "partly",
+    pronunciation: "/ˈpɑːrtli/",
+    translation: "qisman, bir qismida",
+    type: "adverb",
+    usage: "To'liq emas, faqat bir qismida to'g'ri yoki amalga oshgan.",
+    examples: [
+      "The accident was <em>partly</em> her fault.",
+      "The project is <em>partly</em> finished.",
+      "He was <em>partly</em> right in his answer.",
+      "The success was <em>partly</em> due to teamwork.",
+      "The road is <em>partly</em> closed for construction."
+    ],
+    synonyms: ["partially", "somewhat", "in part", "half", "to some extent"]
+  },
+  {
+    word: "partner",
+    pronunciation: "/ˈpɑːrtnər/",
+    translation: "hamkor, sherik, juft",
+    type: "noun",
+    usage: "Ishda, hayotda yoki o'yinda birga bo'lgan kishi.",
+    examples: [
+      "She introduced her business <em>partner</em> to the clients.",
+      "Find a <em>partner</em> and practice the dialogue.",
+      "He and his <em>partner</em> have been together for ten years.",
+      "They became <em>partners</em> in the new startup.",
+      "A good <em>partner</em> supports you through difficult times."
+    ],
+    synonyms: ["colleague", "associate", "ally", "companion", "collaborator"]
+  },
+  {
+    word: "partnership",
+    pronunciation: "/ˈpɑːrtnərʃɪp/",
+    translation: "hamkorlik, sheriklik",
+    type: "noun",
+    usage: "Ikki yoki undan ko'p kishining birgalikda ishlash munosabati.",
+    examples: [
+      "The two companies formed a <em>partnership</em>.",
+      "Their <em>partnership</em> lasted over twenty years.",
+      "The school has a <em>partnership</em> with local businesses.",
+      "A successful <em>partnership</em> requires trust and communication.",
+      "They announced a new <em>partnership</em> at the press conference."
+    ],
+    synonyms: ["collaboration", "alliance", "association", "joint venture", "cooperation"]
+  },
+  {
+    word: "party",
+    pronunciation: "/ˈpɑːrti/",
+    translation: "ziyofat, partiya, tomon",
+    type: "noun",
+    usage: "Siyosiy tashkilot; to'plash yoki bayram; huquqiy jihatdan bir tomon.",
+    examples: [
+      "She threw a surprise <em>party</em> for her friend.",
+      "The Democratic <em>Party</em> won the election.",
+      "Both <em>parties</em> agreed to the terms of the contract.",
+      "The <em>party</em> lasted until midnight.",
+      "He is a member of the ruling <em>party</em>."
+    ],
+    synonyms: ["celebration", "group", "faction", "side", "gathering"]
+  },
+
+
+  {
+    word: "pass",
+    pronunciation: "/pæs/",
+    translation: "o'tmoq, topshirmoq, o'tkazmoq",
+    type: "verb",
+    usage: "Bir joydan o'tmoq; imtihondan o'tmoq; biror narsani bermoq.",
+    examples: [
+      "She managed to <em>pass</em> the final exam.",
+      "Please <em>pass</em> the salt.",
+      "He walked <em>past</em> without noticing me.",
+      "The bill was <em>passed</em> by the parliament.",
+      "Time seems to <em>pass</em> quickly when you're busy."
+    ],
+    synonyms: ["go by", "hand over", "succeed", "approve", "move"]
+  },
+  {
+    word: "passage",
+    pronunciation: "/ˈpæsɪdʒ/",
+    translation: "yo'lak, o'tish, parchа",
+    type: "noun",
+    usage: "O'tish yo'li; kitobdagi parcha; matn bo'limi.",
+    examples: [
+      "Read the <em>passage</em> and answer the questions.",
+      "There is a narrow <em>passage</em> between the two buildings.",
+      "The <em>passage</em> of time heals many wounds.",
+      "She quoted a <em>passage</em> from the Bible.",
+      "The secret <em>passage</em> led to the garden."
+    ],
+    synonyms: ["corridor", "excerpt", "text", "section", "path"]
+  },
+  {
+    word: "passenger",
+    pronunciation: "/ˈpæsɪndʒər/",
+    translation: "yo'lovchi",
+    type: "noun",
+    usage: "Transport vositasida sayohat qiluvchi, lekin haydamaydigan kishi.",
+    examples: [
+      "The <em>passenger</em> seat belt must be fastened.",
+      "All <em>passengers</em> must show their tickets.",
+      "She was a <em>passenger</em> in the car during the accident.",
+      "The plane had over 200 <em>passengers</em> on board.",
+      "The <em>passenger</em> asked the driver to slow down."
+    ],
+    synonyms: ["traveler", "rider", "commuter", "fare", "occupant"]
+  },
+  {
+    word: "passion",
+    pronunciation: "/ˈpæʃən/",
+    translation: "ishtiyoq, ishq, qiziqish",
+    type: "noun",
+    usage: "Biror narsaga kuchli qiziqish yoki sevgi hissi.",
+    examples: [
+      "She has a real <em>passion</em> for music.",
+      "His <em>passion</em> for science led him to become a researcher.",
+      "You can see the <em>passion</em> in her paintings.",
+      "He spoke with great <em>passion</em> about human rights.",
+      "Teaching is more than a job for her — it's a <em>passion</em>."
+    ],
+    synonyms: ["enthusiasm", "love", "zeal", "devotion", "fervor"]
+  },
+  {
+    word: "past",
+    pronunciation: "/pæst/",
+    translation: "o'tgan, oldingi, orqadan",
+    type: "adjective",
+    usage: "Avval bo'lib o'tgan vaqt yoki voqea; shuningdek old ko'makchi sifatida.",
+    examples: [
+      "In the <em>past</em>, people traveled by horse.",
+      "She walked <em>past</em> the bakery every morning.",
+      "His <em>past</em> experiences shaped who he is today.",
+      "It is already <em>past</em> midnight.",
+      "Don't let your <em>past</em> mistakes define your future."
+    ],
+    synonyms: ["previous", "former", "earlier", "bygone", "historical"]
+  },
+  {
+    word: "patch",
+    pronunciation: "/pætʃ/",
+    translation: "yamoq, bo'lak, tuzatmoq",
+    type: "noun",
+    usage: "Yirtiqni yopuvchi material; dasturiy ta'minotdagi tuzatish; maydon bo'lagi.",
+    examples: [
+      "She sewed a <em>patch</em> onto the torn jeans.",
+      "The developer released a <em>patch</em> to fix the bug.",
+      "There was a small <em>patch</em> of ice on the road.",
+      "He had a <em>patch</em> over his eye after the surgery.",
+      "The gardener prepared a <em>patch</em> of soil for planting."
+    ],
+    synonyms: ["piece", "fix", "update", "cover", "section"]
+  },
+  {
+    word: "path",
+    pronunciation: "/pæθ/",
+    translation: "yo'l, so'qmoq, harakat yo'nalishi",
+    type: "noun",
+    usage: "Odamlar yuradigan tor yo'l; maqsadga erishish usuli.",
+    examples: [
+      "The <em>path</em> through the forest was dark and narrow.",
+      "Education is a <em>path</em> to a better future.",
+      "She followed the <em>path</em> along the river.",
+      "There is no easy <em>path</em> to success.",
+      "The hiking <em>path</em> leads to the top of the mountain."
+    ],
+    synonyms: ["trail", "route", "track", "way", "road"]
+  },
+  {
+    word: "patient",
+    pronunciation: "/ˈpeɪʃənt/",
+    translation: "bemor; sabr-toqatli",
+    type: "noun",
+    usage: "Tibbiy yordam olayotgan kishi (ot); sabr bilan kutuvchi (sifat).",
+    examples: [
+      "The <em>patient</em> was admitted to the hospital.",
+      "Be <em>patient</em> — results take time.",
+      "The doctor saw ten <em>patients</em> today.",
+      "She is a very <em>patient</em> teacher.",
+      "The <em>patient</em> recovered quickly after surgery."
+    ],
+    synonyms: ["calm", "tolerant", "sick person", "case", "persevering"]
+  },
+  {
+    word: "pattern",
+    pronunciation: "/ˈpætərn/",
+    translation: "naqsh, andoza, tartib",
+    type: "noun",
+    usage: "Takrorlanuvchi dizayn yoki tartib; xatti-harakat qolip.",
+    examples: [
+      "The fabric had a beautiful floral <em>pattern</em>.",
+      "Scientists noticed a <em>pattern</em> in the data.",
+      "She followed a <em>pattern</em> to knit the sweater.",
+      "His sleeping <em>pattern</em> changed after starting the new job.",
+      "There is a clear <em>pattern</em> of improvement in her grades."
+    ],
+    synonyms: ["design", "model", "template", "trend", "structure"]
+  },
+  {
+    word: "pause",
+    pronunciation: "/pɔːz/",
+    translation: "to'xtash, pauza, bir lahzalik jim bo'lish",
+    type: "verb",
+    usage: "Qisqa vaqtga to'xtatmoq yoki kutmoq.",
+    examples: [
+      "She <em>paused</em> before answering the question.",
+      "Please <em>pause</em> the video — I'll be right back.",
+      "He took a brief <em>pause</em> during the speech.",
+      "The music <em>paused</em> for a moment.",
+      "There was a long <em>pause</em> before she spoke."
+    ],
+    synonyms: ["stop", "halt", "hesitate", "wait", "break"]
+  },
+
+
+  {
+    word: "pay",
+    pronunciation: "/peɪ/",
+    translation: "to'lamoq, maosh",
+    type: "verb",
+    usage: "Pul to'lamoq; shuningdek ish haqi ma'nosida ot sifatida.",
+    examples: [
+      "She forgot to <em>pay</em> the electricity bill.",
+      "He gets good <em>pay</em> for his work.",
+      "They <em>paid</em> for the meal with a credit card.",
+      "It doesn't <em>pay</em> to be dishonest.",
+      "You have to <em>pay</em> attention in class to succeed."
+    ],
+    synonyms: ["pay off", "compensate", "settle", "salary", "remunerate"]
+  },
+  {
+    word: "payment",
+    pronunciation: "/ˈpeɪmənt/",
+    translation: "to'lov, haq to'lash",
+    type: "noun",
+    usage: "Biror narsa yoki xizmat uchun to'lanadigan pul miqdori.",
+    examples: [
+      "The monthly <em>payment</em> is due on the first of each month.",
+      "She made the <em>payment</em> online.",
+      "He requested a <em>payment</em> for his services.",
+      "The <em>payment</em> was processed successfully.",
+      "Failure to make the <em>payment</em> will result in a fine."
+    ],
+    synonyms: ["fee", "charge", "installment", "settlement", "remittance"]
+  },
+  {
+    word: "PC",
+    pronunciation: "/ˌpiːˈsiː/",
+    translation: "shaxsiy kompyuter; siyosiy to'g'rilik",
+    type: "abbreviation",
+    usage: "Personal Computer (shaxsiy kompyuter) yoki Politically Correct (siyosiy jihatdan to'g'ri).",
+    examples: [
+      "She bought a new <em>PC</em> for her office.",
+      "He does most of his work on a <em>PC</em>.",
+      "The <em>PC</em> crashed and he lost all his files.",
+      "That comment wasn't very <em>PC</em> in today's workplace.",
+      "A gaming <em>PC</em> costs much more than a regular one."
+    ],
+    synonyms: ["computer", "desktop", "personal computer", "workstation"]
+  },
+  {
+    word: "peace",
+    pronunciation: "/piːs/",
+    translation: "tinchlik, osoyishtalik",
+    type: "noun",
+    usage: "Urush yo'qligi; ichki xotirjamlik holati.",
+    examples: [
+      "The two countries finally signed a <em>peace</em> agreement.",
+      "She finds <em>peace</em> in meditation.",
+      "We all want to live in <em>peace</em>.",
+      "He needed some <em>peace</em> and quiet to study.",
+      "The soldiers fought for <em>peace</em> in their homeland."
+    ],
+    synonyms: ["harmony", "calm", "tranquility", "serenity", "quiet"]
+  },
+  {
+    word: "peak",
+    pronunciation: "/piːk/",
+    translation: "cho'qqi, eng yuqori nuqta",
+    type: "noun",
+    usage: "Tog' tepasi yoki biror narsaning eng yuqori darajasi.",
+    examples: [
+      "They reached the <em>peak</em> of the mountain at noon.",
+      "Sales reached their <em>peak</em> in December.",
+      "She is at the <em>peak</em> of her career.",
+      "Traffic is at its <em>peak</em> during rush hour.",
+      "The athlete performed at <em>peak</em> condition."
+    ],
+    synonyms: ["summit", "top", "maximum", "height", "pinnacle"]
+  },
+  {
+    word: "peer",
+    pronunciation: "/pɪr/",
+    translation: "tengdosh, hamkor; diqqat bilan qaramoq",
+    type: "noun",
+    usage: "Bir xil yosh yoki mavqedagi kishi; shuningdek diqqat bilan qaramoq ma'nosida fe'l.",
+    examples: [
+      "She was elected by her <em>peers</em> as class president.",
+      "He <em>peered</em> through the window to see inside.",
+      "<em>Peer</em> pressure can be difficult to handle as a teenager.",
+      "The research was reviewed by <em>peers</em> before publication.",
+      "She always tries to help her <em>peers</em> in class."
+    ],
+    synonyms: ["equal", "colleague", "contemporary", "fellow", "associate"]
+  },
+  {
+    word: "penalty",
+    pronunciation: "/ˈpɛnəlti/",
+    translation: "jazo, jazо choрasi, penal",
+    type: "noun",
+    usage: "Qonun yoki qoidani buzganlik uchun beriladigan jazo; sportdagi penal.",
+    examples: [
+      "The player received a <em>penalty</em> for a foul.",
+      "There is a <em>penalty</em> for late payment.",
+      "He scored the winning goal from a <em>penalty</em> kick.",
+      "The law carries a severe <em>penalty</em> for this crime.",
+      "The company faced a heavy <em>penalty</em> for violating regulations."
+    ],
+    synonyms: ["punishment", "fine", "sanction", "forfeit", "sentence"]
+  },
+  {
+    word: "people",
+    pronunciation: "/ˈpiːpəl/",
+    translation: "odamlar, xalq",
+    type: "noun",
+    usage: "Bir guruh insonlar yoki biror millatning a'zolari.",
+    examples: [
+      "Many <em>people</em> attended the concert.",
+      "The <em>people</em> of this country deserve better.",
+      "She loves meeting new <em>people</em>.",
+      "<em>People</em> say that honesty is the best policy.",
+      "The president spoke to the <em>people</em> on national TV."
+    ],
+    synonyms: ["persons", "individuals", "citizens", "population", "humans"]
+  },
+  {
+    word: "pepper",
+    pronunciation: "/ˈpɛpər/",
+    translation: "qalampir, murch",
+    type: "noun",
+    usage: "Ovqatga solinadigan o'tkir ziravorlar; shuningdek sabzavot qalampir.",
+    examples: [
+      "Add a pinch of <em>pepper</em> to the soup.",
+      "She sliced a red <em>pepper</em> for the salad.",
+      "He <em>peppered</em> his speech with jokes.",
+      "Black <em>pepper</em> is used in almost every cuisine.",
+      "The spicy <em>pepper</em> made her eyes water."
+    ],
+    synonyms: ["spice", "chili", "capsicum", "seasoning"]
+  },
+  {
+    word: "per",
+    pronunciation: "/pər/",
+    translation: "har, uchun, bo'yicha",
+    type: "preposition",
+    usage: "Bir birlikka nisbatan; har bir. Ingliz tilida tez-tez ishlatiladi.",
+    examples: [
+      "The car travels 60 miles <em>per</em> hour.",
+      "He earns $20 <em>per</em> hour.",
+      "The fee is $5 <em>per</em> person.",
+      "As <em>per</em> the agreement, delivery is on Monday.",
+      "The package costs $10 <em>per</em> kilogram."
+    ],
+    synonyms: ["for each", "every", "by", "for", "according to"]
+  },
+
+
+  {
+    word: "perceive",
+    pronunciation: "/pərˈsiːv/",
+    translation: "idrok etmoq, his qilmoq, tushunmoq",
+    type: "verb",
+    usage: "Bir narsani his etish yoki tushunish; biror tarzda ko'rish.",
+    examples: [
+      "How do you <em>perceive</em> your role in the team?",
+      "She <em>perceived</em> a change in his attitude.",
+      "He is <em>perceived</em> as a strong leader.",
+      "We <em>perceive</em> colors differently in different light.",
+      "Children often <em>perceive</em> the world more simply than adults."
+    ],
+    synonyms: ["sense", "notice", "realize", "observe", "detect"]
+  },
+  {
+    word: "percentage",
+    pronunciation: "/pərˈsɛntɪdʒ/",
+    translation: "foiz, ulush",
+    type: "noun",
+    usage: "Yuzdan bir qism sifatida ifodalangan miqdor.",
+    examples: [
+      "What <em>percentage</em> of students passed the exam?",
+      "A large <em>percentage</em> of the population uses smartphones.",
+      "He saved a <em>percentage</em> of his income each month.",
+      "The error rate dropped by a high <em>percentage</em>.",
+      "The bank charges a <em>percentage</em> as a transaction fee."
+    ],
+    synonyms: ["proportion", "ratio", "share", "rate", "fraction"]
+  },
+  {
+    word: "perception",
+    pronunciation: "/pərˈsɛpʃən/",
+    translation: "idrok, tasavvur, tushuncha",
+    type: "noun",
+    usage: "Biror narsani qanday ko'rish, his qilish yoki tushunish.",
+    examples: [
+      "Public <em>perception</em> of the company improved after the change.",
+      "Her <em>perception</em> of the situation was very accurate.",
+      "Visual <em>perception</em> can be affected by sleep deprivation.",
+      "He changed his <em>perception</em> after traveling abroad.",
+      "The painting creates a false <em>perception</em> of depth."
+    ],
+    synonyms: ["understanding", "view", "awareness", "impression", "insight"]
+  },
+  {
+    word: "perfect",
+    pronunciation: "/ˈpɜːrfɪkt/",
+    translation: "mukammal, ideal, to'liq",
+    type: "adjective",
+    usage: "Hech qanday kamchiliksiz; eng yaxshi holat.",
+    examples: [
+      "She scored a <em>perfect</em> 100 on the test.",
+      "The weather was <em>perfect</em> for a picnic.",
+      "Nobody is <em>perfect</em>.",
+      "This is the <em>perfect</em> opportunity to start.",
+      "He spent hours trying to make the presentation <em>perfect</em>."
+    ],
+    synonyms: ["flawless", "ideal", "excellent", "faultless", "complete"]
+  },
+  {
+    word: "perfectly",
+    pronunciation: "/ˈpɜːrfɪktli/",
+    translation: "mukammal tarzda, to'liq",
+    type: "adverb",
+    usage: "Hech qanday xatosiz; butunlay, to'g'ri.",
+    examples: [
+      "She speaks English <em>perfectly</em>.",
+      "The plan worked <em>perfectly</em>.",
+      "That dress fits you <em>perfectly</em>.",
+      "He answered every question <em>perfectly</em>.",
+      "The two pieces fit together <em>perfectly</em>."
+    ],
+    synonyms: ["flawlessly", "exactly", "completely", "ideally", "precisely"]
+  },
+  {
+    word: "perform",
+    pronunciation: "/pərˈfɔːrm/",
+    translation: "bajarmoq, ijro etmoq, namoyish qilmoq",
+    type: "verb",
+    usage: "Vazifani bajarmoq yoki tomoshabinlar oldida namoyish qilmoq.",
+    examples: [
+      "The band will <em>perform</em> live tonight.",
+      "She <em>performed</em> well in the job interview.",
+      "The surgeon <em>performed</em> a difficult operation.",
+      "Students <em>performed</em> a play for the parents.",
+      "This machine <em>performs</em> many functions automatically."
+    ],
+    synonyms: ["carry out", "execute", "act", "do", "present"]
+  },
+  {
+    word: "performance",
+    pronunciation: "/pərˈfɔːrməns/",
+    translation: "ijro, natija, spektakl",
+    type: "noun",
+    usage: "Biror vazifaning bajarilishi yoki sahna, kontsert namoyishi.",
+    examples: [
+      "The actor's <em>performance</em> was outstanding.",
+      "Her <em>performance</em> at work has improved significantly.",
+      "The car's <em>performance</em> in cold weather is reliable.",
+      "The audience loved the <em>performance</em>.",
+      "His exam <em>performance</em> was below expectations."
+    ],
+    synonyms: ["show", "execution", "result", "act", "delivery"]
+  },
+  {
+    word: "perhaps",
+    pronunciation: "/pərˈhæps/",
+    translation: "balki, ehtimol",
+    type: "adverb",
+    usage: "Ishonchsizlik yoki imkoniyatni bildiruvchi so'z.",
+    examples: [
+      "<em>Perhaps</em> she forgot about the meeting.",
+      "This is <em>perhaps</em> the most important lesson.",
+      "<em>Perhaps</em> we should try a different approach.",
+      "He will <em>perhaps</em> change his mind.",
+      "<em>Perhaps</em> you're right about this."
+    ],
+    synonyms: ["maybe", "possibly", "conceivably", "it could be", "perchance"]
+  },
+  {
+    word: "period",
+    pronunciation: "/ˈpɪriəd/",
+    translation: "davr, muddat, nuqta",
+    type: "noun",
+    usage: "Muayyan vaqt oraliq; jumlaning oxirida nuqta.",
+    examples: [
+      "She studied abroad for a long <em>period</em>.",
+      "The Renaissance was a great <em>period</em> in art history.",
+      "Don't forget to put a <em>period</em> at the end of the sentence.",
+      "The economy improved during that <em>period</em>.",
+      "He was in hospital for a short <em>period</em> of time."
+    ],
+    synonyms: ["era", "time", "phase", "stage", "interval"]
+  },
+  {
+    word: "permanent",
+    pronunciation: "/ˈpɜːrmənənt/",
+    translation: "doimiy, abadiy, o'zgarmas",
+    type: "adjective",
+    usage: "Uzoq muddatli yoki hech qachon o'zgarmaydigan.",
+    examples: [
+      "She got a <em>permanent</em> job after the internship.",
+      "The tattoo is <em>permanent</em>.",
+      "He was given <em>permanent</em> residency in the country.",
+      "The damage to the building was <em>permanent</em>.",
+      "She made a <em>permanent</em> decision to move abroad."
+    ],
+    synonyms: ["lasting", "enduring", "fixed", "stable", "forever"]
+  },
+
+
+  {
+    word: "permission",
+    pronunciation: "/pərˈmɪʃən/",
+    translation: "ruxsat, ijozat",
+    type: "noun",
+    usage: "Biror narsani qilishga berilgan rasmiy yoki norasmiy ruxsat.",
+    examples: [
+      "You need <em>permission</em> to enter this area.",
+      "She asked for <em>permission</em> to leave class early.",
+      "He was granted <em>permission</em> to publish the article.",
+      "Without <em>permission</em>, you cannot use this photo.",
+      "The student got <em>permission</em> from the principal."
+    ],
+    synonyms: ["consent", "approval", "authorization", "allowance", "leave"]
+  },
+  {
+    word: "permit",
+    pronunciation: "/pərˈmɪt/",
+    translation: "ruxsat bermoq; ruxsatnoma",
+    type: "verb",
+    usage: "Biror narsaga yo'l qo'ymoq yoki ijozat bermoq (fe'l); rasmiy ruxsatnoma (ot).",
+    examples: [
+      "The law does not <em>permit</em> smoking here.",
+      "You need a <em>permit</em> to build a new house.",
+      "She <em>permitted</em> the children to stay up late.",
+      "Weather <em>permitting</em>, we will go hiking.",
+      "He applied for a work <em>permit</em>."
+    ],
+    synonyms: ["allow", "authorize", "approve", "let", "license"]
+  },
+  {
+    word: "person",
+    pronunciation: "/ˈpɜːrsən/",
+    translation: "kishi, odam, shaxs",
+    type: "noun",
+    usage: "Bitta inson; grammatikada shaxs (birinchi, ikkinchi, uchinchi).",
+    examples: [
+      "Every <em>person</em> deserves to be treated with respect.",
+      "She is the right <em>person</em> for the job.",
+      "He met the president in <em>person</em>.",
+      "Each <em>person</em> must bring their own ID.",
+      "This verb changes depending on the <em>person</em>."
+    ],
+    synonyms: ["individual", "human", "man", "woman", "being"]
+  },
+  {
+    word: "personal",
+    pronunciation: "/ˈpɜːrsənəl/",
+    translation: "shaxsiy, xususiy",
+    type: "adjective",
+    usage: "Biror kishiga tegishli yoki uning hayotiga oid.",
+    examples: [
+      "Please don't ask <em>personal</em> questions.",
+      "She keeps a <em>personal</em> diary.",
+      "He shared a <em>personal</em> experience with the group.",
+      "This is a <em>personal</em> decision that only you can make.",
+      "The manager gave her <em>personal</em> attention to the issue."
+    ],
+    synonyms: ["private", "individual", "intimate", "own", "subjective"]
+  },
+  {
+    word: "personality",
+    pronunciation: "/ˌpɜːrsəˈnælɪti/",
+    translation: "shaxsiyat, xarakter, inson tabiyati",
+    type: "noun",
+    usage: "Kishining o'ziga xos xulq-atvori va xarakteri.",
+    examples: [
+      "She has a very bright and positive <em>personality</em>.",
+      "His <em>personality</em> makes him popular at work.",
+      "A strong <em>personality</em> can inspire others.",
+      "The job requires someone with a flexible <em>personality</em>.",
+      "Her <em>personality</em> changed after she moved to a new city."
+    ],
+    synonyms: ["character", "nature", "identity", "temperament", "disposition"]
+  },
+  {
+    word: "personally",
+    pronunciation: "/ˈpɜːrsənəli/",
+    translation: "shaxsan, o'zim/o'zing",
+    type: "adverb",
+    usage: "O'z shaxsida; boshqa birov orqali emas, o'zi.",
+    examples: [
+      "<em>Personally</em>, I prefer coffee over tea.",
+      "He <em>personally</em> delivered the letter.",
+      "She took the criticism <em>personally</em>.",
+      "<em>Personally</em>, I think we should wait.",
+      "He thanked every guest <em>personally</em>."
+    ],
+    synonyms: ["individually", "in person", "for myself", "directly", "firsthand"]
+  },
+  {
+    word: "personnel",
+    pronunciation: "/ˌpɜːrsəˈnɛl/",
+    translation: "xodimlar, ishchilar",
+    type: "noun",
+    usage: "Tashkilot yoki kompaniyadagi barcha xodimlar.",
+    examples: [
+      "The company hired new <em>personnel</em> last month.",
+      "All <em>personnel</em> must wear ID badges.",
+      "Military <em>personnel</em> were deployed to the border.",
+      "She works in the <em>personnel</em> department.",
+      "The <em>personnel</em> manager reviews job applications."
+    ],
+    synonyms: ["staff", "employees", "workforce", "team", "crew"]
+  },
+  {
+    word: "perspective",
+    pronunciation: "/pərˈspɛktɪv/",
+    translation: "nuqtai nazar, ko'rinish, istiqbol",
+    type: "noun",
+    usage: "Biror vaziyatni ko'rish tarzi; ko'rish burchagi yoki masofali tasvir.",
+    examples: [
+      "Try to see things from a different <em>perspective</em>.",
+      "Travel can change your <em>perspective</em> on life.",
+      "From my <em>perspective</em>, the plan seems risky.",
+      "The painting uses <em>perspective</em> to create depth.",
+      "She gave a fresh <em>perspective</em> on the problem."
+    ],
+    synonyms: ["viewpoint", "outlook", "angle", "view", "standpoint"]
+  },
+  {
+    word: "persuade",
+    pronunciation: "/pərˈsweɪd/",
+    translation: "ishontirmoq, ko'ndirmoq",
+    type: "verb",
+    usage: "Biror kishini biror narsani qilishga yoki biror fikrga ishontirishga undamoq.",
+    examples: [
+      "She <em>persuaded</em> him to try the new restaurant.",
+      "He tried to <em>persuade</em> the committee to change the rules.",
+      "Nothing could <em>persuade</em> her to change her mind.",
+      "He used facts and evidence to <em>persuade</em> his audience.",
+      "Can you <em>persuade</em> your friend to join us?"
+    ],
+    synonyms: ["convince", "influence", "urge", "coax", "win over"]
+  },
+  {
+    word: "pet",
+    pronunciation: "/pɛt/",
+    translation: "uy hayvoni; sevimli; erkalаmoq",
+    type: "noun",
+    usage: "Uyda saqlanadigan hayvon; shuningdek sifat va fe'l sifatida ham ishlatiladi.",
+    examples: [
+      "She has a <em>pet</em> dog named Buddy.",
+      "He <em>petted</em> the cat gently.",
+      "Having a <em>pet</em> teaches children responsibility.",
+      "That's her <em>pet</em> theory — she talks about it all the time.",
+      "The child asked his parents for a <em>pet</em> rabbit."
+    ],
+    synonyms: ["animal", "companion", "favorite", "stroke", "caress"]
+  },
+
+
+  {
+    word: "phase",
+    pronunciation: "/feɪz/",
+    translation: "bosqich, davr, faza",
+    type: "noun",
+    usage: "Bir jarayonning ma'lum bir qismi yoki bosqichi.",
+    examples: [
+      "We are in the final <em>phase</em> of the project.",
+      "The first <em>phase</em> of construction is complete.",
+      "Teenagers often go through a rebellious <em>phase</em>.",
+      "The moon goes through different <em>phases</em> each month.",
+      "The new <em>phase</em> of the plan will begin next year."
+    ],
+    synonyms: ["stage", "step", "period", "chapter", "cycle"]
+  },
+  {
+    word: "phenomenon",
+    pronunciation: "/fɪˈnɒmɪnən/",
+    translation: "hodisa, fenomen",
+    type: "noun",
+    usage: "Kuzatiladigan g'ayrioddiy yoki qiziqarli hodisa.",
+    examples: [
+      "The northern lights are a natural <em>phenomenon</em>.",
+      "Social media is a global <em>phenomenon</em>.",
+      "Scientists studied the <em>phenomenon</em> carefully.",
+      "This singer became a worldwide <em>phenomenon</em>.",
+      "Climate change is a complex <em>phenomenon</em>."
+    ],
+    synonyms: ["event", "occurrence", "wonder", "spectacle", "fact"]
+  },
+  {
+    word: "philosophy",
+    pronunciation: "/fɪˈlɒsəfi/",
+    translation: "falsafa, hayot qarashi",
+    type: "noun",
+    usage: "Hayot va bilim haqidagi chuqur fikrlar tizimi; kimningdir asosiy qarashlari.",
+    examples: [
+      "She studied <em>philosophy</em> at university.",
+      "His <em>philosophy</em> is to always be kind.",
+      "<em>Philosophy</em> helps us think about big life questions.",
+      "The company's <em>philosophy</em> is to put customers first.",
+      "Ancient Greek <em>philosophy</em> still influences us today."
+    ],
+    synonyms: ["belief", "worldview", "doctrine", "principle", "ideology"]
+  },
+  {
+    word: "phone",
+    pronunciation: "/foʊn/",
+    translation: "telefon, qo'ng'iroq qilmoq",
+    type: "noun",
+    usage: "Aloqa qurilmasi; shuningdek qo'ng'iroq qilmoq fe'li.",
+    examples: [
+      "Can I borrow your <em>phone</em>?",
+      "She <em>phoned</em> her mother every Sunday.",
+      "He left his <em>phone</em> on the bus.",
+      "The <em>phone</em> rang three times before she answered.",
+      "Don't use your <em>phone</em> during class."
+    ],
+    synonyms: ["telephone", "mobile", "cell", "call", "ring"]
+  },
+  {
+    word: "photo",
+    pronunciation: "/ˈfoʊtoʊ/",
+    translation: "fotosurat, rasm",
+    type: "noun",
+    usage: "Kamera yordamida olingan tasvir.",
+    examples: [
+      "She took a <em>photo</em> of the sunset.",
+      "He framed the <em>photo</em> and hung it on the wall.",
+      "The <em>photo</em> captured a beautiful moment.",
+      "Can you send me that <em>photo</em>?",
+      "The old <em>photos</em> brought back many memories."
+    ],
+    synonyms: ["photograph", "picture", "image", "snapshot", "shot"]
+  },
+  {
+    word: "photograph",
+    pronunciation: "/ˈfoʊtəɡræf/",
+    translation: "fotosurat; rasm olmoq",
+    type: "noun",
+    usage: "Kamera yordamida olingan tasvir; shuningdek rasm olmoq fe'li.",
+    examples: [
+      "The <em>photograph</em> shows the family at the beach.",
+      "She <em>photographed</em> the wildlife in Africa.",
+      "He keeps a <em>photograph</em> of his parents on his desk.",
+      "The journalist <em>photographed</em> the event.",
+      "That <em>photograph</em> was taken in 1985."
+    ],
+    synonyms: ["photo", "image", "picture", "snapshot", "print"]
+  },
+  {
+    word: "photographer",
+    pronunciation: "/fəˈtɒɡrəfər/",
+    translation: "fotograf, suratchi",
+    type: "noun",
+    usage: "Professional yoki hobby sifatida rasm oluvchi kishi.",
+    examples: [
+      "The <em>photographer</em> took beautiful wedding photos.",
+      "She hired a professional <em>photographer</em> for the event.",
+      "He became a wildlife <em>photographer</em> after college.",
+      "The news <em>photographer</em> was at the scene.",
+      "A skilled <em>photographer</em> understands light and angles."
+    ],
+    synonyms: ["cameraman", "photo artist", "lensman", "shutterbug", "photojournalist"]
+  },
+  {
+    word: "phrase",
+    pronunciation: "/freɪz/",
+    translation: "ibora, so'z birikmasi",
+    type: "noun",
+    usage: "To'liq gap bo'lmagan bir nechta so'zdan iborat birlik.",
+    examples: [
+      "Learn common <em>phrases</em> to sound more natural.",
+      "\"Break a leg\" is an English <em>phrase</em> meaning good luck.",
+      "She used a clever <em>phrase</em> in her essay.",
+      "That's just a <em>phrase</em> — don't take it literally.",
+      "He didn't understand the <em>phrase</em> at first."
+    ],
+    synonyms: ["expression", "idiom", "saying", "term", "wording"]
+  },
+  {
+    word: "physical",
+    pronunciation: "/ˈfɪzɪkəl/",
+    translation: "jismoniy, moddiy, fizikaviy",
+    type: "adjective",
+    usage: "Tanaga yoki moddiy olamga tegishli, ruhiy emas.",
+    examples: [
+      "Regular <em>physical</em> exercise is good for your health.",
+      "The <em>physical</em> world is everything we can touch.",
+      "He passed the <em>physical</em> exam for the military.",
+      "<em>Physical</em> activity reduces the risk of many diseases.",
+      "There was no <em>physical</em> evidence at the crime scene."
+    ],
+    synonyms: ["bodily", "material", "tangible", "corporeal", "concrete"]
+  },
+  {
+    word: "physically",
+    pronunciation: "/ˈfɪzɪkli/",
+    translation: "jismoniy jihatdan",
+    type: "adverb",
+    usage: "Tan yoki jism nuqtai nazaridan.",
+    examples: [
+      "She is <em>physically</em> fit and active.",
+      "The work was <em>physically</em> demanding.",
+      "He was <em>physically</em> present but mentally distracted.",
+      "The two cities are <em>physically</em> close but culturally different.",
+      "She trained <em>physically</em> for six months before the race."
+    ],
+    synonyms: ["bodily", "materially", "in person", "tangibly", "concretely"]
+  },
+
+
+  {
+    word: "physician",
+    pronunciation: "/fɪˈzɪʃən/",
+    translation: "shifokor, tabib",
+    type: "noun",
+    usage: "Tibbiyot ta'limi olgan va kasalliklarni davolaydigan mutaxassis.",
+    examples: [
+      "Her <em>physician</em> recommended more rest.",
+      "He consulted a <em>physician</em> about his symptoms.",
+      "A <em>physician</em> must have strong diagnostic skills.",
+      "The <em>physician</em> prescribed antibiotics for the infection.",
+      "She has been my family <em>physician</em> for years."
+    ],
+    synonyms: ["doctor", "medical doctor", "practitioner", "healer", "MD"]
+  },
+  {
+    word: "piano",
+    pronunciation: "/piˈænoʊ/",
+    translation: "pianino, fortepiano",
+    type: "noun",
+    usage: "Tugmalar va simlardan iborat musiqiy asbob.",
+    examples: [
+      "She played the <em>piano</em> at the concert.",
+      "He practiced <em>piano</em> for two hours every day.",
+      "The grand <em>piano</em> was in the center of the hall.",
+      "She learned to play the <em>piano</em> at age six.",
+      "The sound of the <em>piano</em> filled the room."
+    ],
+    synonyms: ["keyboard", "grand piano", "upright piano", "fortepiano", "ivories"]
+  },
+  {
+    word: "pick",
+    pronunciation: "/pɪk/",
+    translation: "tanlаmoq, termoq, olmoq",
+    type: "verb",
+    usage: "Bir narsani tanlash yoki ko'tarib olish.",
+    examples: [
+      "<em>Pick</em> the answer that best fits the question.",
+      "She went to the garden to <em>pick</em> flowers.",
+      "He <em>picked</em> up the pen from the floor.",
+      "Can you <em>pick</em> me up from the airport?",
+      "They asked him to <em>pick</em> a number between one and ten."
+    ],
+    synonyms: ["choose", "select", "gather", "pluck", "opt for"]
+  },
+  {
+    word: "picture",
+    pronunciation: "/ˈpɪktʃər/",
+    translation: "rasm, tasvir, surat",
+    type: "noun",
+    usage: "Chizilgan yoki suratga olingan tasvir; vaziyatni tasvirlamoq.",
+    examples: [
+      "She drew a beautiful <em>picture</em>.",
+      "Can you paint me a <em>picture</em> of what happened?",
+      "He hung a <em>picture</em> of his family in his office.",
+      "The <em>picture</em> tells a thousand words.",
+      "She took a <em>picture</em> of the mountain."
+    ],
+    synonyms: ["image", "photo", "painting", "illustration", "portrait"]
+  },
+  {
+    word: "pie",
+    pronunciation: "/paɪ/",
+    translation: "pirog, to'rt, pasta",
+    type: "noun",
+    usage: "Ichiga to'ldirilgan xamirdan tayyorlangan taom; shuningdek statistikada doira diagrammasi.",
+    examples: [
+      "She baked an apple <em>pie</em> for the party.",
+      "He ate a slice of cherry <em>pie</em>.",
+      "The <em>pie</em> chart shows the budget breakdown.",
+      "Mom's homemade <em>pie</em> is the best.",
+      "They shared a <em>pie</em> after the game."
+    ],
+    synonyms: ["tart", "pastry", "quiche", "flan", "turnover"]
+  },
+  {
+    word: "piece",
+    pronunciation: "/piːs/",
+    translation: "bo'lak, qism, asar",
+    type: "noun",
+    usage: "Kattaroq narsaning bir bo'lagi; musiqa yoki san'at asari.",
+    examples: [
+      "She ate a <em>piece</em> of cake.",
+      "He wrote a beautiful <em>piece</em> of music.",
+      "Give me a <em>piece</em> of paper.",
+      "Each <em>piece</em> of the puzzle fits perfectly.",
+      "That's a great <em>piece</em> of advice."
+    ],
+    synonyms: ["part", "bit", "section", "item", "fragment"]
+  },
+  {
+    word: "pile",
+    pronunciation: "/paɪl/",
+    translation: "uyum, to'plam, uymoq",
+    type: "noun",
+    usage: "Narsalarning ustma-ust qo'yilgan to'plami; shuningdek yig'moq fe'li.",
+    examples: [
+      "There was a <em>pile</em> of books on the desk.",
+      "He <em>piled</em> the clothes in the corner.",
+      "A <em>pile</em> of dishes waited in the sink.",
+      "She found the letter under a <em>pile</em> of papers.",
+      "The work is <em>piling</em> up and I need help."
+    ],
+    synonyms: ["heap", "stack", "mound", "collection", "accumulation"]
+  },
+  {
+    word: "pilot",
+    pronunciation: "/ˈpaɪlət/",
+    translation: "pilot, uchuvchi; sinov dasturi",
+    type: "noun",
+    usage: "Samolyot uchiruvchi; shuningdek sinov yoki namunа loyiha.",
+    examples: [
+      "The <em>pilot</em> announced that we would land soon.",
+      "She became a commercial <em>pilot</em> after ten years.",
+      "They launched a <em>pilot</em> program in three schools.",
+      "The <em>pilot</em> safely landed the plane in a storm.",
+      "The TV show started as a <em>pilot</em> episode."
+    ],
+    synonyms: ["aviator", "flyer", "captain", "test", "trial"]
+  },
+  {
+    word: "pine",
+    pronunciation: "/paɪn/",
+    translation: "qarag'ay daraxti; sog'inmoq",
+    type: "noun",
+    usage: "Iynabarg daraxt; shuningdek sog'inish yoki istamoq ma'nosida fe'l.",
+    examples: [
+      "The forest was full of tall <em>pine</em> trees.",
+      "She <em>pined</em> for her hometown after moving abroad.",
+      "The cabin was built with <em>pine</em> wood.",
+      "He was <em>pining</em> for a new adventure.",
+      "The air smelled of <em>pine</em> after the rain."
+    ],
+    synonyms: ["conifer", "fir", "evergreen", "long for", "yearn"]
+  },
+  {
+    word: "pink",
+    pronunciation: "/pɪŋk/",
+    translation: "pushti rang",
+    type: "adjective",
+    usage: "Qizil va oq aralashmasidan hosil bo'lgan pushti rang.",
+    examples: [
+      "She wore a <em>pink</em> dress to the party.",
+      "The sky turned <em>pink</em> at sunset.",
+      "He painted his room <em>pink</em>.",
+      "The baby was wrapped in a <em>pink</em> blanket.",
+      "She blushed and her cheeks went <em>pink</em>."
+    ],
+    synonyms: ["rosy", "blush", "salmon", "rose", "flushed"]
+  },
+
+
+  {
+    word: "pipe",
+    pronunciation: "/paɪp/",
+    translation: "quvur, nay",
+    type: "noun",
+    usage: "Suyuqlik yoki gaz o'tkazuvchi quvur; musiqa asbobi.",
+    examples: [
+      "The water <em>pipe</em> burst in the cold weather.",
+      "She heard music from a <em>pipe</em> in the street.",
+      "The plumber fixed the broken <em>pipe</em>.",
+      "Smoke came out of the factory <em>pipe</em>.",
+      "He played a traditional <em>pipe</em> at the festival."
+    ],
+    synonyms: ["tube", "conduit", "hose", "flute", "duct"]
+  },
+  {
+    word: "pitch",
+    pronunciation: "/pɪtʃ/",
+    translation: "qiyalik, ovoz toni, maydoni; tashlаmoq",
+    type: "noun",
+    usage: "Ovozning balandligi; sport maydoni; biror g'oyani taqdim etish.",
+    examples: [
+      "The singer has a very high <em>pitch</em>.",
+      "He made a sales <em>pitch</em> to the investors.",
+      "The football <em>pitch</em> was wet after the rain.",
+      "She <em>pitched</em> the ball perfectly.",
+      "His business <em>pitch</em> impressed the judges."
+    ],
+    synonyms: ["tone", "level", "field", "throw", "presentation"]
+  },
+  {
+    word: "place",
+    pronunciation: "/pleɪs/",
+    translation: "joy, joylashtirmoq",
+    type: "noun",
+    usage: "Biror narsa yoki birov bo'lgan joy; shuningdek joylashtirmoq fe'li.",
+    examples: [
+      "This is a great <em>place</em> to study.",
+      "Please <em>place</em> your bags under the seat.",
+      "She found a good <em>place</em> to sit in the park.",
+      "He finished in first <em>place</em> in the race.",
+      "Keep everything in its proper <em>place</em>."
+    ],
+    synonyms: ["location", "spot", "position", "site", "area"]
+  },
+  {
+    word: "plan",
+    pronunciation: "/plæn/",
+    translation: "reja, reja tuzmoq",
+    type: "noun",
+    usage: "Biror narsani amalga oshirish uchun oldindan o'ylangan harakat tartibi.",
+    examples: [
+      "She made a study <em>plan</em> for the exam.",
+      "What are your <em>plans</em> for the weekend?",
+      "The <em>plan</em> worked better than expected.",
+      "He <em>planned</em> the trip months in advance.",
+      "Stick to the <em>plan</em> and everything will work out."
+    ],
+    synonyms: ["scheme", "strategy", "program", "design", "blueprint"]
+  },
+  {
+    word: "plane",
+    pronunciation: "/pleɪn/",
+    translation: "samolyot; tekislik",
+    type: "noun",
+    usage: "Uchuvchi transport vositasi; tekis matematik yuzasi.",
+    examples: [
+      "The <em>plane</em> took off on time.",
+      "She is afraid of flying on a <em>plane</em>.",
+      "The math problem involved a flat <em>plane</em>.",
+      "We watched the <em>plane</em> disappear into the clouds.",
+      "He took a <em>plane</em> to London for the conference."
+    ],
+    synonyms: ["airplane", "aircraft", "jet", "flat surface", "level"]
+  },
+  {
+    word: "planet",
+    pronunciation: "/ˈplænɪt/",
+    translation: "sayyora",
+    type: "noun",
+    usage: "Quyosh atrofida aylanuvchi katta kosmik jism.",
+    examples: [
+      "Earth is the third <em>planet</em> from the sun.",
+      "Jupiter is the largest <em>planet</em> in our solar system.",
+      "Scientists discovered a new <em>planet</em> last year.",
+      "We must protect our <em>planet</em> from pollution.",
+      "Mars is often called the red <em>planet</em>."
+    ],
+    synonyms: ["world", "globe", "celestial body", "orb", "sphere"]
+  },
+  {
+    word: "planning",
+    pronunciation: "/ˈplænɪŋ/",
+    translation: "rejalashtirish, loyihalash",
+    type: "noun",
+    usage: "Kelajakdagi harakatlarni oldindan o'ylash jarayoni.",
+    examples: [
+      "Good <em>planning</em> leads to success.",
+      "The event required months of careful <em>planning</em>.",
+      "She works in urban <em>planning</em>.",
+      "Without <em>planning</em>, the project failed.",
+      "He is responsible for the financial <em>planning</em> of the company."
+    ],
+    synonyms: ["preparation", "organization", "strategy", "arrangement", "scheduling"]
+  },
+  {
+    word: "plant",
+    pronunciation: "/plænt/",
+    translation: "o'simlik; zavod; ekmoq",
+    type: "noun",
+    usage: "Tirik o'simlik; ishlab chiqarish zavodi; shuningdek ekmoq fe'li.",
+    examples: [
+      "She watered the <em>plant</em> every morning.",
+      "The factory <em>plant</em> employs 500 workers.",
+      "He <em>planted</em> tomatoes in the garden.",
+      "The houseplant <em>plant</em> needs sunlight.",
+      "They <em>planted</em> trees along the street."
+    ],
+    synonyms: ["vegetation", "factory", "shrub", "sow", "grow"]
+  },
+  {
+    word: "plastic",
+    pronunciation: "/ˈplæstɪk/",
+    translation: "plastik, sun'iy; egiluvchan",
+    type: "noun",
+    usage: "Sun'iy material; shuningdek moslashuvchan yoki sun'iy ma'nosida sifat.",
+    examples: [
+      "The bottle is made of <em>plastic</em>.",
+      "We should reduce our use of single-use <em>plastic</em>.",
+      "She carried a <em>plastic</em> bag from the supermarket.",
+      "His smile looked a bit <em>plastic</em>.",
+      "<em>Plastic</em> pollution is a serious environmental problem."
+    ],
+    synonyms: ["synthetic", "artificial", "polymer", "flexible", "man-made"]
+  },
+  {
+    word: "plate",
+    pronunciation: "/pleɪt/",
+    translation: "likop, plita, tarelka",
+    type: "noun",
+    usage: "Ovqat qo'yiladigan yassi idish; shuningdek metaldan yasalgan yassı qatlam.",
+    examples: [
+      "She put the salad on a <em>plate</em>.",
+      "He ate a full <em>plate</em> of pasta.",
+      "The car's license <em>plate</em> was dirty.",
+      "The tectonic <em>plates</em> move slowly over time.",
+      "Wash the <em>plates</em> after dinner, please."
+    ],
+    synonyms: ["dish", "platter", "slab", "layer", "sheet"]
+  },
+
+
+  {
+    word: "platform",
+    pronunciation: "/ˈplætfɔːrm/",
+    translation: "platforma, sahnа, maydon",
+    type: "noun",
+    usage: "Ko'tarilgan sirtli joy; dasturiy ta'minot muhiti; siyosiy dastur.",
+    examples: [
+      "The speaker stood on a raised <em>platform</em>.",
+      "The app is available on multiple <em>platforms</em>.",
+      "He uses social media as a <em>platform</em> to share ideas.",
+      "Wait on <em>platform</em> 3 for the next train.",
+      "They launched a new online learning <em>platform</em>."
+    ],
+    synonyms: ["stage", "base", "system", "podium", "tribune"]
+  },
+  {
+    word: "play",
+    pronunciation: "/pleɪ/",
+    translation: "o'ynamoq, ijro etmoq; o'yin, pyesa",
+    type: "verb",
+    usage: "O'yin o'ynamoq; musiqa chalmoq; teatr pyesasi.",
+    examples: [
+      "The children <em>play</em> in the park after school.",
+      "She <em>plays</em> the violin beautifully.",
+      "He starred in a <em>play</em> at the local theater.",
+      "Let's <em>play</em> a board game tonight.",
+      "The team <em>played</em> their best match this season."
+    ],
+    synonyms: ["perform", "game", "drama", "act", "enjoy"]
+  },
+  {
+    word: "player",
+    pronunciation: "/ˈpleɪər/",
+    translation: "o'yinchi, ijrochi",
+    type: "noun",
+    usage: "O'yinda qatnashuvchi kishi; musiqa ijro etuvchi.",
+    examples: [
+      "He is the best <em>player</em> on the team.",
+      "She is a key <em>player</em> in the negotiations.",
+      "The music <em>player</em> stopped working.",
+      "Every <em>player</em> must follow the rules of the game.",
+      "She became a professional tennis <em>player</em> at 18."
+    ],
+    synonyms: ["athlete", "participant", "performer", "competitor", "musician"]
+  },
+  {
+    word: "please",
+    pronunciation: "/pliːz/",
+    translation: "iltimos; xursand qilmoq",
+    type: "verb",
+    usage: "Iltimos (xushmuomalalik uchun); kimnidir baxtli yoki xursand qilmoq.",
+    examples: [
+      "<em>Please</em> close the door when you leave.",
+      "She always tries to <em>please</em> her customers.",
+      "He was hard to <em>please</em> — nothing was ever good enough.",
+      "<em>Please</em> sit down and make yourself comfortable.",
+      "Her performance <em>pleased</em> the audience greatly."
+    ],
+    synonyms: ["kindly", "satisfy", "delight", "gladden", "oblige"]
+  },
+  {
+    word: "pleasure",
+    pronunciation: "/ˈplɛʒər/",
+    translation: "zavq, lazzat, xursandlik",
+    type: "noun",
+    usage: "Xursandchilik yoki lazzat hissi.",
+    examples: [
+      "It's a <em>pleasure</em> to meet you.",
+      "She takes great <em>pleasure</em> in reading.",
+      "He did it with <em>pleasure</em>.",
+      "The <em>pleasure</em> of cooking comes from creativity.",
+      "Traveling gives her great <em>pleasure</em>."
+    ],
+    synonyms: ["joy", "delight", "enjoyment", "happiness", "satisfaction"]
+  },
+  {
+    word: "plenty",
+    pronunciation: "/ˈplɛnti/",
+    translation: "ko'plik, to'kinchilik, yetarli",
+    type: "pronoun",
+    usage: "Keragidan ko'p miqdor; to'liq yetarli.",
+    examples: [
+      "There is <em>plenty</em> of food for everyone.",
+      "She has <em>plenty</em> of time to finish.",
+      "He had <em>plenty</em> of opportunities but didn't take them.",
+      "Don't worry — there's <em>plenty</em> more.",
+      "<em>Plenty</em> of water is important during exercise."
+    ],
+    synonyms: ["enough", "abundance", "lots", "many", "ample"]
+  },
+  {
+    word: "plot",
+    pronunciation: "/plɒt/",
+    translation: "sujet, reja, er uchastkasi; rejalashtirmoq",
+    type: "noun",
+    usage: "Hikoya yoki filmning asосий voqealar ketma-ketligi; shuningdek biror yashirin rej.",
+    examples: [
+      "The <em>plot</em> of the novel was very exciting.",
+      "They discovered a <em>plot</em> to steal the money.",
+      "She bought a <em>plot</em> of land outside the city.",
+      "He <em>plotted</em> his route on the map.",
+      "The movie's <em>plot</em> had many surprising twists."
+    ],
+    synonyms: ["storyline", "scheme", "land", "plan", "conspiracy"]
+  },
+  {
+    word: "plus",
+    pronunciation: "/plʌs/",
+    translation: "plyus, qo'shimcha, va ham",
+    type: "conjunction",
+    usage: "Matematikada qo'shish belgisi; qo'shimcha afzallik.",
+    examples: [
+      "Two <em>plus</em> two equals four.",
+      "The job pays well — <em>plus</em> you get free lunch.",
+      "She has experience, <em>plus</em> she speaks three languages.",
+      "The hotel is comfortable and <em>plus</em> it's very affordable.",
+      "Five <em>plus</em> three is eight."
+    ],
+    synonyms: ["and", "additionally", "also", "added", "extra"]
+  },
+  {
+    word: "PM",
+    pronunciation: "/ˌpiːˈɛm/",
+    translation: "tushdan keyin (tushdan so'ng); Bosh Vazir",
+    type: "abbreviation",
+    usage: "Post Meridiem — tushdan keyingi vaqt; Prime Minister — Bosh Vazir.",
+    examples: [
+      "The meeting is at 3 <em>PM</em>.",
+      "She leaves work at 5 <em>PM</em> every day.",
+      "The <em>PM</em> addressed the nation on television.",
+      "Lunch is served from 12 <em>PM</em> to 2 <em>PM</em>.",
+      "The <em>PM</em> announced new economic reforms."
+    ],
+    synonyms: ["afternoon", "evening", "prime minister", "post meridiem"]
+  },
+  {
+    word: "pocket",
+    pronunciation: "/ˈpɒkɪt/",
+    translation: "cho'ntak; cho'ntakka solmoq",
+    type: "noun",
+    usage: "Kiyimning ichiga tikib qo'yilgan qop; shuningdek yashirmoq fe'li.",
+    examples: [
+      "He put his phone in his <em>pocket</em>.",
+      "She found the key in her jacket <em>pocket</em>.",
+      "The spy <em>pocketed</em> the document quickly.",
+      "The small gift fit perfectly in his <em>pocket</em>.",
+      "He has deep <em>pockets</em> — he can afford anything."
+    ],
+    synonyms: ["pouch", "compartment", "bag", "conceal", "hide"]
+  },
+
+
+  {
+    word: "poem",
+    pronunciation: "/ˈpoʊɪm/",
+    translation: "she'r, nazmiy asar",
+    type: "noun",
+    usage: "Badiiy til va ritm bilan yozilgan adabiy asar.",
+    examples: [
+      "She wrote a beautiful <em>poem</em> for her mother.",
+      "He memorized the <em>poem</em> for the class.",
+      "The <em>poem</em> expresses deep emotion.",
+      "We studied a <em>poem</em> by Shakespeare.",
+      "She reads a <em>poem</em> every night before bed."
+    ],
+    synonyms: ["verse", "rhyme", "lyric", "sonnet", "ode"]
+  },
+  {
+    word: "poet",
+    pronunciation: "/ˈpoʊɪt/",
+    translation: "shoir",
+    type: "noun",
+    usage: "She'r yozuvchi ijodkor kishi.",
+    examples: [
+      "He is a famous <em>poet</em> in his country.",
+      "The <em>poet</em> read her work at the festival.",
+      "Shakespeare was both a playwright and a <em>poet</em>.",
+      "She became a celebrated <em>poet</em> in her twenties.",
+      "The young <em>poet</em> published his first collection."
+    ],
+    synonyms: ["versifier", "lyricist", "bard", "rhymer", "writer"]
+  },
+  {
+    word: "poetry",
+    pronunciation: "/ˈpoʊɪtri/",
+    translation: "she'riyat, nazm",
+    type: "noun",
+    usage: "She'r janridagi adabiyot; lirik ifoda sifati.",
+    examples: [
+      "She studies classical <em>poetry</em>.",
+      "His <em>poetry</em> is known for its deep imagery.",
+      "<em>Poetry</em> can express feelings that prose cannot.",
+      "The class focused on romantic <em>poetry</em>.",
+      "She discovered her love of <em>poetry</em> in school."
+    ],
+    synonyms: ["verse", "rhyme", "lyricism", "meter", "literature"]
+  },
+  {
+    word: "point",
+    pronunciation: "/pɔɪnt/",
+    translation: "nuqta, fikr, maqsad; ko'rsatmoq",
+    type: "noun",
+    usage: "Muayyan joy yoki lahza; fikr yoki g'oya; uchli uchi; ko'rsatmoq fe'li.",
+    examples: [
+      "That's a good <em>point</em>.",
+      "She <em>pointed</em> at the map and explained the route.",
+      "The <em>point</em> of the lesson is to learn, not just to pass.",
+      "They scored ten <em>points</em> in the game.",
+      "At that <em>point</em>, they decided to stop."
+    ],
+    synonyms: ["tip", "idea", "argument", "score", "indicate"]
+  },
+  {
+    word: "pole",
+    pronunciation: "/poʊl/",
+    translation: "ustun, qovoq; qutb",
+    type: "noun",
+    usage: "Uzun tayoq; Yer yoki magnit qutbi.",
+    examples: [
+      "The flag was attached to a tall <em>pole</em>.",
+      "They ski in the mountains using <em>poles</em>.",
+      "The North <em>Pole</em> is covered in ice.",
+      "A street lamp <em>pole</em> was knocked over in the storm.",
+      "Scientists study the magnetic <em>poles</em> of the Earth."
+    ],
+    synonyms: ["post", "rod", "staff", "axis", "extremity"]
+  },
+  {
+    word: "police",
+    pronunciation: "/pəˈliːs/",
+    translation: "politsiya",
+    type: "noun",
+    usage: "Qonun-tartibotni saqlash vakolatiga ega davlat tuzilmasi.",
+    examples: [
+      "She called the <em>police</em> after the robbery.",
+      "The <em>police</em> arrived at the scene quickly.",
+      "He works as a <em>police</em> officer.",
+      "The <em>police</em> investigated the case for months.",
+      "Two <em>police</em> cars blocked the road."
+    ],
+    synonyms: ["law enforcement", "officers", "cops", "constabulary", "force"]
+  },
+  {
+    word: "policy",
+    pronunciation: "/ˈpɒlɪsi/",
+    translation: "siyosat, qoida, tartib",
+    type: "noun",
+    usage: "Tashkilot yoki hukumat tomonidan qabul qilingan qoidalar to'plami.",
+    examples: [
+      "The company has a strict no-smoking <em>policy</em>.",
+      "The government announced a new education <em>policy</em>.",
+      "Her <em>policy</em> is to always be honest.",
+      "Read the <em>policy</em> before signing the contract.",
+      "The school's <em>policy</em> on attendance is very clear."
+    ],
+    synonyms: ["rule", "guideline", "regulation", "procedure", "principle"]
+  },
+  {
+    word: "political",
+    pronunciation: "/pəˈlɪtɪkəl/",
+    translation: "siyosiy",
+    type: "adjective",
+    usage: "Siyosat yoki hukumatga oid.",
+    examples: [
+      "She avoided <em>political</em> topics at the dinner table.",
+      "He has strong <em>political</em> opinions.",
+      "The <em>political</em> situation in the country is unstable.",
+      "They joined a <em>political</em> party together.",
+      "This is a <em>political</em> decision, not a technical one."
+    ],
+    synonyms: ["governmental", "civic", "partisan", "electoral", "state"]
+  },
+  {
+    word: "politically",
+    pronunciation: "/pəˈlɪtɪkli/",
+    translation: "siyosiy jihatdan",
+    type: "adverb",
+    usage: "Siyosat nuqtai nazaridan.",
+    examples: [
+      "He is <em>politically</em> active in his community.",
+      "The decision was <em>politically</em> motivated.",
+      "She is <em>politically</em> aware and votes in every election.",
+      "This issue is <em>politically</em> sensitive.",
+      "The speech was <em>politically</em> calculated."
+    ],
+    synonyms: ["governmentally", "civically", "strategically", "diplomatically"]
+  },
+  {
+    word: "politician",
+    pronunciation: "/ˌpɒlɪˈtɪʃən/",
+    translation: "siyosatchi",
+    type: "noun",
+    usage: "Siyosat bilan professional shug'ullanuvchi kishi.",
+    examples: [
+      "She became a <em>politician</em> to make a difference.",
+      "The <em>politician</em> gave a speech at the rally.",
+      "Many people distrust <em>politicians</em>.",
+      "He is a veteran <em>politician</em> with thirty years of experience.",
+      "The young <em>politician</em> won her first election."
+    ],
+    synonyms: ["statesman", "lawmaker", "official", "representative", "leader"]
+  },
+
+
+  {
+    word: "politics",
+    pronunciation: "/ˈpɒlɪtɪks/",
+    translation: "siyosat",
+    type: "noun",
+    usage: "Hukumat va davlatni boshqarish bilan bog'liq faoliyat.",
+    examples: [
+      "She is passionate about <em>politics</em>.",
+      "He avoids talking about <em>politics</em> at work.",
+      "<em>Politics</em> affects every part of our lives.",
+      "She studied <em>politics</em> at university.",
+      "Office <em>politics</em> can be tricky to navigate."
+    ],
+    synonyms: ["government", "affairs", "statecraft", "public life", "governance"]
+  },
+  {
+    word: "poll",
+    pronunciation: "/poʊl/",
+    translation: "so'rovnoma, ovoz berish",
+    type: "noun",
+    usage: "Odamlar fikrlarini o'rganish uchun o'tkaziladigan so'rov; saylov ovoz berish joyi.",
+    examples: [
+      "The <em>poll</em> showed 60% support for the candidate.",
+      "She conducted a <em>poll</em> on social media.",
+      "Citizens went to the <em>polls</em> to vote.",
+      "The <em>poll</em> results surprised many analysts.",
+      "He was leading in the latest <em>polls</em>."
+    ],
+    synonyms: ["survey", "vote", "ballot", "census", "questionnaire"]
+  },
+  {
+    word: "pollution",
+    pronunciation: "/pəˈluːʃən/",
+    translation: "ifloslanish, ifloslantirish",
+    type: "noun",
+    usage: "Havо, suv yoki yerga zararli moddalar qo'shilishi.",
+    examples: [
+      "Air <em>pollution</em> is a serious health hazard.",
+      "Water <em>pollution</em> harms fish and wildlife.",
+      "The city suffers from heavy traffic <em>pollution</em>.",
+      "We must work together to reduce <em>pollution</em>.",
+      "Plastic is one of the main causes of ocean <em>pollution</em>."
+    ],
+    synonyms: ["contamination", "smog", "filth", "toxins", "degradation"]
+  },
+  {
+    word: "pool",
+    pronunciation: "/puːl/",
+    translation: "hovuz, basseyn; umumiy resurs",
+    type: "noun",
+    usage: "Suzish uchun hovuz; umumiy to'plangan resurslar.",
+    examples: [
+      "They swam in the hotel <em>pool</em>.",
+      "The company created a talent <em>pool</em>.",
+      "He dove into the swimming <em>pool</em>.",
+      "They decided to <em>pool</em> their money together.",
+      "The natural <em>pool</em> was crystal clear."
+    ],
+    synonyms: ["swimming pool", "pond", "collection", "reserve", "fund"]
+  },
+  {
+    word: "poor",
+    pronunciation: "/pʊr/",
+    translation: "kambag'al, yomon, nochor",
+    type: "adjective",
+    usage: "Kam puli bor; sifatsiz yoki yomon.",
+    examples: [
+      "She grew up in a <em>poor</em> neighborhood.",
+      "The food was of <em>poor</em> quality.",
+      "He made a <em>poor</em> decision.",
+      "They donated food to help the <em>poor</em>.",
+      "<em>Poor</em> sleep affects your concentration."
+    ],
+    synonyms: ["needy", "low-quality", "bad", "inadequate", "impoverished"]
+  },
+  {
+    word: "pop",
+    pronunciation: "/pɒp/",
+    translation: "qars etmoq, paydo bo'lmoq; pop (musiqa)",
+    type: "verb",
+    usage: "Birdan paydo bo'lmoq yoki portlamoq; pop musiqa janri.",
+    examples: [
+      "The balloon <em>popped</em> with a loud bang.",
+      "She loves <em>pop</em> music.",
+      "He <em>popped</em> the question at dinner.",
+      "A notification <em>popped</em> up on the screen.",
+      "Can you <em>pop</em> by the store on your way home?"
+    ],
+    synonyms: ["burst", "snap", "appear", "popular music", "fizzy drink"]
+  },
+  {
+    word: "popular",
+    pronunciation: "/ˈpɒpjʊlər/",
+    translation: "mashhur, ommabop",
+    type: "adjective",
+    usage: "Ko'pchilik tomonidan yaxshi ko'rilgan yoki keng tarqalgan.",
+    examples: [
+      "This song is very <em>popular</em> among teenagers.",
+      "She is the most <em>popular</em> girl in school.",
+      "Pizza is a <em>popular</em> food around the world.",
+      "The <em>popular</em> café was always full.",
+      "He became <em>popular</em> after his first TV appearance."
+    ],
+    synonyms: ["well-liked", "famous", "trendy", "celebrated", "common"]
+  },
+  {
+    word: "population",
+    pronunciation: "/ˌpɒpjʊˈleɪʃən/",
+    translation: "aholi, xalq soni",
+    type: "noun",
+    usage: "Biror joyda yashovchi barcha odamlar.",
+    examples: [
+      "The <em>population</em> of China is over 1.4 billion.",
+      "The city's <em>population</em> is growing rapidly.",
+      "A large <em>population</em> lives in poverty.",
+      "The survey targeted the student <em>population</em>.",
+      "Rural <em>populations</em> are decreasing in many countries."
+    ],
+    synonyms: ["inhabitants", "residents", "people", "citizens", "community"]
+  },
+  {
+    word: "porch",
+    pronunciation: "/pɔːrtʃ/",
+    translation: "ayvon, eshik oldi",
+    type: "noun",
+    usage: "Uyning kirish qismidagi yopiq yoki ochiq maydon.",
+    examples: [
+      "They sat on the <em>porch</em> and watched the sunset.",
+      "She left her shoes by the <em>porch</em>.",
+      "He read the newspaper on the <em>porch</em> every morning.",
+      "The <em>porch</em> light was on when we arrived.",
+      "Their cat often naps on the <em>porch</em>."
+    ],
+    synonyms: ["veranda", "deck", "terrace", "entrance", "stoop"]
+  },
+  {
+    word: "port",
+    pronunciation: "/pɔːrt/",
+    translation: "port, qavoq, kirish joyi",
+    type: "noun",
+    usage: "Kemalar to'xtaladigan suv yo'li; kompyuter porti.",
+    examples: [
+      "The ship arrived at the <em>port</em> at dawn.",
+      "Connect the cable to the USB <em>port</em>.",
+      "The city grew because of its busy <em>port</em>.",
+      "The container was unloaded at the <em>port</em>.",
+      "The left side of a ship is called <em>port</em>."
+    ],
+    synonyms: ["harbor", "dock", "terminal", "socket", "connection"]
+  },
+
+
+  {
+    word: "portion",
+    pronunciation: "/ˈpɔːrʃən/",
+    translation: "qism, ulush, ovqat porsiyasi",
+    type: "noun",
+    usage: "Bir narsaning muayyan bo'lagi yoki miqdori.",
+    examples: [
+      "She ate only a small <em>portion</em> of the meal.",
+      "A large <em>portion</em> of the budget goes to education.",
+      "He divided the cake into equal <em>portions</em>.",
+      "Only a small <em>portion</em> of students passed.",
+      "The restaurant serves generous <em>portions</em>."
+    ],
+    synonyms: ["part", "share", "serving", "section", "amount"]
+  },
+  {
+    word: "portrait",
+    pronunciation: "/ˈpɔːrtrɪt/",
+    translation: "portret, rasm",
+    type: "noun",
+    usage: "Kishining yuzi yoki tanasini tasvirlovchi rasm yoki surat.",
+    examples: [
+      "She commissioned a <em>portrait</em> of her grandmother.",
+      "The museum has a famous <em>portrait</em> by Rembrandt.",
+      "The photographer took a stunning <em>portrait</em>.",
+      "He painted a <em>portrait</em> of the president.",
+      "The book gives a detailed <em>portrait</em> of her life."
+    ],
+    synonyms: ["likeness", "image", "painting", "profile", "picture"]
+  },
+  {
+    word: "portray",
+    pronunciation: "/pɔːrˈtreɪ/",
+    translation: "tasvirlamoq, rol o'ynamoq",
+    type: "verb",
+    usage: "Biror kishini yoki narsani tasvirlamoq yoki aktyorlik qilmoq.",
+    examples: [
+      "The film <em>portrays</em> life in the 1800s.",
+      "She <em>portrayed</em> the queen in the play.",
+      "The media often <em>portrays</em> immigrants negatively.",
+      "He was asked to <em>portray</em> a villain in the movie.",
+      "The painting <em>portrays</em> a peaceful countryside scene."
+    ],
+    synonyms: ["depict", "represent", "show", "describe", "characterize"]
+  },
+  {
+    word: "pose",
+    pronunciation: "/poʊz/",
+    translation: "qo'ymoq, muammo keltirmoq; poza olmoq",
+    type: "verb",
+    usage: "Suratga tushish uchun holatda turmoq; savolni qo'ymoq yoki xavf tug'dirmoq.",
+    examples: [
+      "She <em>posed</em> for the camera.",
+      "This problem <em>poses</em> a serious challenge.",
+      "He <em>posed</em> as a doctor to enter the hospital.",
+      "The new law <em>poses</em> a risk to small businesses.",
+      "They <em>posed</em> together for a family photo."
+    ],
+    synonyms: ["position", "present", "pretend", "raise", "risk"]
+  },
+  {
+    word: "position",
+    pronunciation: "/pəˈzɪʃən/",
+    translation: "holat, lavozim, joylashish",
+    type: "noun",
+    usage: "Biror narsaning joylashgan o'rni; ish lavozimi; fikr yoki tutum.",
+    examples: [
+      "She applied for the <em>position</em> of manager.",
+      "What is your <em>position</em> on this issue?",
+      "He was in a difficult <em>position</em>.",
+      "The athlete held a challenging <em>position</em> for a minute.",
+      "The company's <em>position</em> in the market improved."
+    ],
+    synonyms: ["location", "place", "role", "stance", "status"]
+  },
+  {
+    word: "positive",
+    pronunciation: "/ˈpɒzɪtɪv/",
+    translation: "ijobiy, musbat, ishonchli",
+    type: "adjective",
+    usage: "Yaxshi, foydali yoki optimistik; test natijasi musbat.",
+    examples: [
+      "She always has a <em>positive</em> attitude.",
+      "The test came back <em>positive</em>.",
+      "Focus on the <em>positive</em> aspects of the situation.",
+      "He received <em>positive</em> feedback from his teacher.",
+      "A <em>positive</em> environment helps students learn better."
+    ],
+    synonyms: ["optimistic", "good", "affirmative", "constructive", "confident"]
+  },
+  {
+    word: "possess",
+    pronunciation: "/pəˈzɛs/",
+    translation: "ega bo'lmoq, tutmoq",
+    type: "verb",
+    usage: "Biror narsaga egalik qilmoq yoki muayyan xususiyatga ega bo'lmoq.",
+    examples: [
+      "She <em>possesses</em> great artistic talent.",
+      "He <em>possessed</em> an old map of the city.",
+      "She doesn't <em>possess</em> a driver's license.",
+      "He <em>possesses</em> all the qualities of a leader.",
+      "What <em>possessed</em> you to do that?"
+    ],
+    synonyms: ["own", "have", "hold", "carry", "bear"]
+  },
+  {
+    word: "possibility",
+    pronunciation: "/ˌpɒsɪˈbɪlɪti/",
+    translation: "imkoniyat, ehtimollik",
+    type: "noun",
+    usage: "Biror narsaning ro'y berishi mumkin bo'lgan holat.",
+    examples: [
+      "There is a <em>possibility</em> of rain tomorrow.",
+      "She explored every <em>possibility</em> before deciding.",
+      "The <em>possibility</em> of failure scared him.",
+      "Is there any <em>possibility</em> you could help?",
+      "He saw a <em>possibility</em> for improvement."
+    ],
+    synonyms: ["chance", "prospect", "option", "likelihood", "opportunity"]
+  },
+  {
+    word: "possible",
+    pronunciation: "/ˈpɒsɪbəl/",
+    translation: "mumkin, ehtimoliy",
+    type: "adjective",
+    usage: "Bo'lishi yoki amalga oshishi mumkin.",
+    examples: [
+      "Is it <em>possible</em> to finish by Friday?",
+      "She did everything <em>possible</em> to help.",
+      "It's <em>possible</em> that he forgot.",
+      "We explored all <em>possible</em> solutions.",
+      "Come as soon as <em>possible</em>."
+    ],
+    synonyms: ["feasible", "achievable", "likely", "potential", "doable"]
+  },
+  {
+    word: "possibly",
+    pronunciation: "/ˈpɒsɪbli/",
+    translation: "ehtimol, balki",
+    type: "adverb",
+    usage: "Ishonchsiz yoki ehtimoliy tarzda.",
+    examples: [
+      "She will <em>possibly</em> arrive late.",
+      "Can you <em>possibly</em> help me with this?",
+      "This is <em>possibly</em> the hardest exam I have ever taken.",
+      "He couldn't <em>possibly</em> have done it alone.",
+      "It's <em>possibly</em> the best movie I've seen."
+    ],
+    synonyms: ["perhaps", "maybe", "conceivably", "by chance", "potentially"]
+  },
+
+
+  {
+    word: "post",
+    pronunciation: "/poʊst/",
+    translation: "lavozim, ustun, pochta; joylashtimoq",
+    type: "noun",
+    usage: "Ish lavozimi; xat-xabar pochta; ijtimoiy tarmoqda post.",
+    examples: [
+      "He applied for the <em>post</em> of director.",
+      "She shared a <em>post</em> on Instagram.",
+      "The <em>post</em> office opens at 9 AM.",
+      "They <em>posted</em> the announcement on the board.",
+      "He nailed the sign to a wooden <em>post</em>."
+    ],
+    synonyms: ["position", "mail", "column", "publish", "share"]
+  },
+  {
+    word: "pot",
+    pronunciation: "/pɒt/",
+    translation: "qozon, idish",
+    type: "noun",
+    usage: "Ovqat pishirish uchun chuqur idish; gul qo'yiladigan idish.",
+    examples: [
+      "She cooked soup in a large <em>pot</em>.",
+      "He watered the flowers in the <em>pot</em>.",
+      "The <em>pot</em> was boiling when she returned.",
+      "She grew herbs in small <em>pots</em> on the balcony.",
+      "Don't touch the <em>pot</em> — it's hot."
+    ],
+    synonyms: ["pan", "container", "vessel", "jar", "kettle"]
+  },
+  {
+    word: "potato",
+    pronunciation: "/pəˈteɪtoʊ/",
+    translation: "kartoshka",
+    type: "noun",
+    usage: "Yerda o'sadigan ovqatga ishlatiladigan sabzavot.",
+    examples: [
+      "She made mashed <em>potato</em> for dinner.",
+      "He ordered fries — which are made from <em>potatoes</em>.",
+      "Baked <em>potato</em> is a popular dish in the US.",
+      "<em>Potatoes</em> can be boiled, fried, or roasted.",
+      "The soup had <em>potatoes</em>, carrots, and onions."
+    ],
+    synonyms: ["spud", "tuber", "tater"]
+  },
+  {
+    word: "potential",
+    pronunciation: "/pəˈtɛnʃəl/",
+    translation: "salohiyat, potentsial; mumkin bo'lgan",
+    type: "noun",
+    usage: "Kelajakda amalga oshishi mumkin bo'lgan imkoniyat; yashirin kuch.",
+    examples: [
+      "She has great <em>potential</em> as an athlete.",
+      "This idea has enormous <em>potential</em>.",
+      "We must consider the <em>potential</em> risks.",
+      "He failed to reach his full <em>potential</em>.",
+      "The <em>potential</em> for growth in this market is huge."
+    ],
+    synonyms: ["possibility", "capacity", "promise", "prospect", "ability"]
+  },
+  {
+    word: "potentially",
+    pronunciation: "/pəˈtɛnʃəli/",
+    translation: "potentsial jihatdan, mumkin bo'lgan",
+    type: "adverb",
+    usage: "Kelajakda bo'lishi mumkin bo'lgan tarzda.",
+    examples: [
+      "This is a <em>potentially</em> dangerous situation.",
+      "The treatment is <em>potentially</em> life-saving.",
+      "He is <em>potentially</em> the best player in the team.",
+      "The new technology could <em>potentially</em> change everything.",
+      "The virus is <em>potentially</em> harmful to the elderly."
+    ],
+    synonyms: ["possibly", "perhaps", "conceivably", "likely", "in theory"]
+  },
+  {
+    word: "pound",
+    pronunciation: "/paʊnd/",
+    translation: "funt (og'irlik/valyuta); urib maydalamоq",
+    type: "noun",
+    usage: "Og'irlik birligi (454 gramm) yoki Britaniya valyutasi; shuningdek qattiq urmoq.",
+    examples: [
+      "She paid five <em>pounds</em> for the book.",
+      "The recipe needs one <em>pound</em> of flour.",
+      "He <em>pounded</em> the table with his fist.",
+      "The British <em>pound</em> is stronger than the euro.",
+      "She <em>pounded</em> the garlic in a mortar."
+    ],
+    synonyms: ["beat", "strike", "currency", "weight unit", "sterling"]
+  },
+  {
+    word: "pour",
+    pronunciation: "/pɔːr/",
+    translation: "quymoq, to'kmoq, yomg'ir yog'moq",
+    type: "verb",
+    usage: "Suyuqlikni idishdan o'tkazmoq; kuchli yomg'ir yog'moq.",
+    examples: [
+      "She <em>poured</em> juice into the glass.",
+      "He <em>poured</em> his heart out to his friend.",
+      "It was <em>pouring</em> rain outside.",
+      "Please <em>pour</em> me a cup of tea.",
+      "He <em>poured</em> oil into the pan."
+    ],
+    synonyms: ["fill", "flow", "tip", "stream", "gush"]
+  },
+  {
+    word: "poverty",
+    pronunciation: "/ˈpɒvərti/",
+    translation: "qashshoqlik, kambag'allik",
+    type: "noun",
+    usage: "Yetarli pul yoki asosiy zaruriyatlarsiz yashash holati.",
+    examples: [
+      "Millions of people live in <em>poverty</em>.",
+      "Education is key to reducing <em>poverty</em>.",
+      "She grew up in extreme <em>poverty</em>.",
+      "The government launched a program to fight <em>poverty</em>.",
+      "<em>Poverty</em> affects both physical and mental health."
+    ],
+    synonyms: ["destitution", "need", "hardship", "deprivation", "penury"]
+  },
+  {
+    word: "powder",
+    pronunciation: "/ˈpaʊdər/",
+    translation: "kukun, porошок",
+    type: "noun",
+    usage: "Mayda zarrachalardan iborat qattiq modda.",
+    examples: [
+      "She mixed baking <em>powder</em> into the batter.",
+      "The medicine comes in <em>powder</em> form.",
+      "He used talcum <em>powder</em> after his shower.",
+      "The <em>powder</em> was dissolved in hot water.",
+      "Fresh snow felt like soft <em>powder</em> under her feet."
+    ],
+    synonyms: ["dust", "granules", "flour", "fine particles", "substance"]
+  },
+  {
+    word: "power",
+    pronunciation: "/ˈpaʊər/",
+    translation: "kuch, quvvat, hokimiyat",
+    type: "noun",
+    usage: "Kuch yoki ta'sir; elektr energiya; siyosiy nazorat.",
+    examples: [
+      "The storm cut the <em>power</em> for hours.",
+      "She used her <em>power</em> to help others.",
+      "Knowledge is <em>power</em>.",
+      "He rose to <em>power</em> very quickly.",
+      "The engine has a lot of <em>power</em>."
+    ],
+    synonyms: ["strength", "force", "energy", "authority", "control"]
+  },
+
+
+  {
+    word: "powerful",
+    pronunciation: "/ˈpaʊərfʊl/",
+    translation: "kuchli, qudratli",
+    type: "adjective",
+    usage: "Katta kuch yoki ta'sirga ega.",
+    examples: [
+      "The speech was incredibly <em>powerful</em>.",
+      "She is a <em>powerful</em> woman in business.",
+      "The new engine is more <em>powerful</em> than the previous one.",
+      "Music can be a <em>powerful</em> tool for change.",
+      "He built a <em>powerful</em> network of supporters."
+    ],
+    synonyms: ["strong", "mighty", "influential", "dominant", "forceful"]
+  },
+  {
+    word: "practical",
+    pronunciation: "/ˈpræktɪkəl/",
+    translation: "amaliy, foydali, ishlatishga qulay",
+    type: "adjective",
+    usage: "Nazariy emas, real hayotda qo'llash mumkin bo'lgan.",
+    examples: [
+      "She gave <em>practical</em> advice on saving money.",
+      "The design is simple and <em>practical</em>.",
+      "He is a very <em>practical</em> person.",
+      "<em>Practical</em> experience is as important as theory.",
+      "The <em>practical</em> exam was harder than expected."
+    ],
+    synonyms: ["functional", "useful", "real-world", "sensible", "applied"]
+  },
+  {
+    word: "practice",
+    pronunciation: "/ˈpræktɪs/",
+    translation: "mashq, amaliyot; mashq qilmoq",
+    type: "noun",
+    usage: "Malaka oshirish uchun takrorlash; kasb yoki odatiy ish.",
+    examples: [
+      "She improved through daily <em>practice</em>.",
+      "He runs a medical <em>practice</em> downtown.",
+      "In <em>practice</em>, the idea didn't work.",
+      "<em>Practice</em> makes perfect.",
+      "She <em>practices</em> piano for one hour each day."
+    ],
+    synonyms: ["exercise", "drill", "habit", "routine", "training"]
+  },
+  {
+    word: "pray",
+    pronunciation: "/preɪ/",
+    translation: "ibodat qilmoq, duo qilmoq",
+    type: "verb",
+    usage: "Xudo yoki ilohga murojaat qilmoq; biror narsa bo'lishini umid qilmoq.",
+    examples: [
+      "She <em>prays</em> every morning.",
+      "He <em>prayed</em> for his family's safety.",
+      "They <em>prayed</em> together before the meal.",
+      "Let's <em>pray</em> that everything goes well.",
+      "She <em>prayed</em> for strength to get through the difficulty."
+    ],
+    synonyms: ["worship", "meditate", "implore", "appeal", "plead"]
+  },
+  {
+    word: "prayer",
+    pronunciation: "/prɛr/",
+    translation: "ibodat, duo, namoz",
+    type: "noun",
+    usage: "Xudoga murojaat qilinadigan so'z yoki marosim.",
+    examples: [
+      "She said a short <em>prayer</em> before bed.",
+      "His <em>prayer</em> was answered.",
+      "The group said a <em>prayer</em> together.",
+      "Morning <em>prayer</em> gives her peace.",
+      "He offered a <em>prayer</em> for peace in the world."
+    ],
+    synonyms: ["worship", "meditation", "blessing", "invocation", "devotion"]
+  },
+  {
+    word: "precisely",
+    pronunciation: "/prɪˈsaɪsli/",
+    translation: "aynan, to'liq, aniq",
+    type: "adverb",
+    usage: "Xuddi shunday; aniq va to'g'ri tarzda.",
+    examples: [
+      "That is <em>precisely</em> what I was going to say.",
+      "He followed the instructions <em>precisely</em>.",
+      "She arrived at <em>precisely</em> 8 o'clock.",
+      "The tool cuts the material <em>precisely</em>.",
+      "That is <em>precisely</em> the point."
+    ],
+    synonyms: ["exactly", "accurately", "correctly", "just", "specifically"]
+  },
+  {
+    word: "predict",
+    pronunciation: "/prɪˈdɪkt/",
+    translation: "bashorat qilmoq, taxmin qilmoq",
+    type: "verb",
+    usage: "Kelajakdagi voqeani oldindan aytmoq.",
+    examples: [
+      "Scientists can <em>predict</em> weather patterns.",
+      "She <em>predicted</em> the team would win.",
+      "Nobody can <em>predict</em> the future with certainty.",
+      "The model <em>predicts</em> a rise in temperatures.",
+      "He <em>predicted</em> the economic crisis years ago."
+    ],
+    synonyms: ["forecast", "foresee", "anticipate", "foretell", "project"]
+  },
+  {
+    word: "prefer",
+    pronunciation: "/prɪˈfɜːr/",
+    translation: "afzal ko'rmoq",
+    type: "verb",
+    usage: "Bir narsani boshqasidan ko'ra yaxshiroq ko'rmoq.",
+    examples: [
+      "I <em>prefer</em> tea to coffee.",
+      "She <em>prefers</em> working in the morning.",
+      "He <em>preferred</em> to walk rather than take a taxi.",
+      "Do you <em>prefer</em> the city or the countryside?",
+      "She always <em>prefers</em> honest feedback."
+    ],
+    synonyms: ["favor", "choose", "like better", "opt for", "select"]
+  },
+  {
+    word: "preference",
+    pronunciation: "/ˈprɛfrəns/",
+    translation: "afzallik, yaxshi ko'rish",
+    type: "noun",
+    usage: "Biror narsani boshqasidan afzal ko'rish.",
+    examples: [
+      "She has a <em>preference</em> for classical music.",
+      "What is your food <em>preference</em>?",
+      "He showed no <em>preference</em> between the two options.",
+      "Cultural <em>preferences</em> vary from country to country.",
+      "Her <em>preference</em> is to study in the evening."
+    ],
+    synonyms: ["choice", "liking", "taste", "inclination", "priority"]
+  },
+  {
+    word: "pregnancy",
+    pronunciation: "/ˈprɛɡnənsi/",
+    translation: "homiladorlik",
+    type: "noun",
+    usage: "Ayolning homilali bo'lish davri.",
+    examples: [
+      "She announced her <em>pregnancy</em> to her family.",
+      "The doctor monitored her <em>pregnancy</em> closely.",
+      "<em>Pregnancy</em> lasts about nine months.",
+      "She had a healthy <em>pregnancy</em> and gave birth safely.",
+      "Good nutrition is very important during <em>pregnancy</em>."
+    ],
+    synonyms: ["gestation", "expecting", "maternity", "conception period"]
+  },
+
+
+  {
+    word: "pregnant",
+    pronunciation: "/ˈprɛɡnənt/",
+    translation: "homilador, bo'g'oz",
+    type: "adjective",
+    usage: "Ayol qornida bola ko'tayotgan holat.",
+    examples: [
+      "She is six months <em>pregnant</em>.",
+      "He learned his wife was <em>pregnant</em>.",
+      "The doctor confirmed she was <em>pregnant</em>.",
+      "<em>Pregnant</em> women should avoid certain foods.",
+      "She felt tired during the first weeks of being <em>pregnant</em>."
+    ],
+    synonyms: ["expecting", "with child", "expecting a baby", "carrying"]
+  },
+  {
+    word: "preparation",
+    pronunciation: "/ˌprɛpəˈreɪʃən/",
+    translation: "tayyorgarlik, tayyorlash",
+    type: "noun",
+    usage: "Biror narsa uchun oldindan tayyorlanish jarayoni.",
+    examples: [
+      "Good <em>preparation</em> is key to a successful presentation.",
+      "She made careful <em>preparations</em> for the trip.",
+      "The <em>preparation</em> of the meal took two hours.",
+      "He spent weeks in <em>preparation</em> for the exam.",
+      "Lack of <em>preparation</em> led to many mistakes."
+    ],
+    synonyms: ["readiness", "planning", "arrangement", "setup", "groundwork"]
+  },
+  {
+    word: "prepare",
+    pronunciation: "/prɪˈpɛr/",
+    translation: "tayyorlamoq, tayyorlanmoq",
+    type: "verb",
+    usage: "Biror narsa yoki holat uchun oldindan hozirlamoq.",
+    examples: [
+      "She <em>prepared</em> dinner for the whole family.",
+      "He <em>prepared</em> thoroughly for the interview.",
+      "Please <em>prepare</em> a short speech.",
+      "They <em>prepared</em> a report for the board.",
+      "Always <em>prepare</em> for the unexpected."
+    ],
+    synonyms: ["ready", "arrange", "set up", "plan", "organize"]
+  },
+  {
+    word: "prescription",
+    pronunciation: "/prɪˈskrɪpʃən/",
+    translation: "retsept, buyruqnoma",
+    type: "noun",
+    usage: "Shifokor tomonidan berilgan dori yoki davolash ko'rsatmasi.",
+    examples: [
+      "The doctor wrote a <em>prescription</em> for antibiotics.",
+      "You need a <em>prescription</em> to buy this medicine.",
+      "She took the <em>prescription</em> to the pharmacy.",
+      "Follow the <em>prescription</em> exactly as written.",
+      "He forgot his <em>prescription</em> at home."
+    ],
+    synonyms: ["order", "recipe", "direction", "formula", "instruction"]
+  },
+  {
+    word: "presence",
+    pronunciation: "/ˈprɛzəns/",
+    translation: "mavjudlik, borliq, hozirlik",
+    type: "noun",
+    usage: "Birovning biror joyda bo'lishi; kuchli ta'sir.",
+    examples: [
+      "His <em>presence</em> calmed everyone in the room.",
+      "Her <em>presence</em> at the event was unexpected.",
+      "The <em>presence</em> of food attracts wildlife.",
+      "She has a strong stage <em>presence</em>.",
+      "The officer required his <em>presence</em> at the station."
+    ],
+    synonyms: ["existence", "attendance", "being", "appearance", "company"]
+  },
+  {
+    word: "present",
+    pronunciation: "/ˈprɛzənt/",
+    translation: "hozirgi; taqdim etmoq; sovg'a",
+    type: "adjective",
+    usage: "Hozirgi vaqt; mavjud bo'lmoq; taqdim etmoq; sovg'a.",
+    examples: [
+      "Are you <em>present</em> at the meeting?",
+      "She <em>presented</em> her findings to the class.",
+      "He gave her a birthday <em>present</em>.",
+      "In the <em>present</em>, we must focus on solutions.",
+      "All students must be <em>present</em> on exam day."
+    ],
+    synonyms: ["current", "gift", "here", "offer", "introduce"]
+  },
+  {
+    word: "presentation",
+    pronunciation: "/ˌprɛzənˈteɪʃən/",
+    translation: "taqdimot, namoyish",
+    type: "noun",
+    usage: "Biror narsa to'g'risida tayyorlangan va ko'rsatilgan ma'lumot.",
+    examples: [
+      "She gave an excellent <em>presentation</em> on climate change.",
+      "The <em>presentation</em> lasted thirty minutes.",
+      "He prepared slides for his <em>presentation</em>.",
+      "Her <em>presentation</em> impressed the entire board.",
+      "Good <em>presentation</em> skills are valued in every field."
+    ],
+    synonyms: ["speech", "talk", "demonstration", "show", "lecture"]
+  },
+  {
+    word: "preserve",
+    pronunciation: "/prɪˈzɜːrv/",
+    translation: "saqlаmoq, asramoq",
+    type: "verb",
+    usage: "Biror narsani yaxshi holda yoki asl holatida saqlamoq.",
+    examples: [
+      "We must <em>preserve</em> our natural environment.",
+      "She <em>preserved</em> the old photos in an album.",
+      "The treaty helped to <em>preserve</em> peace.",
+      "He worked to <em>preserve</em> traditional music.",
+      "Pickling is a way to <em>preserve</em> vegetables."
+    ],
+    synonyms: ["protect", "maintain", "conserve", "keep", "safeguard"]
+  },
+  {
+    word: "president",
+    pronunciation: "/ˈprɛzɪdənt/",
+    translation: "prezident, rais",
+    type: "noun",
+    usage: "Mamlakat yoki tashkilotning eng yuqori rahbari.",
+    examples: [
+      "She became the first female <em>president</em>.",
+      "The <em>president</em> signed the new law.",
+      "He was elected <em>president</em> by a wide margin.",
+      "The <em>president</em> of the company resigned.",
+      "She interviewed the <em>president</em> for the news channel."
+    ],
+    synonyms: ["leader", "head of state", "chief", "commander", "chairman"]
+  },
+  {
+    word: "presidential",
+    pronunciation: "/ˌprɛzɪˈdɛnʃəl/",
+    translation: "prezidentlik, prezidentga oid",
+    type: "adjective",
+    usage: "Prezident yoki prezidentlik vazifasiga tegishli.",
+    examples: [
+      "The <em>presidential</em> election is next year.",
+      "She announced her <em>presidential</em> campaign.",
+      "He gave a <em>presidential</em> pardon.",
+      "The <em>presidential</em> debate drew millions of viewers.",
+      "She has strong <em>presidential</em> ambitions."
+    ],
+    synonyms: ["executive", "governmental", "official", "electoral", "state-level"]
+  },
+
+
+  {
+    word: "press",
+    pronunciation: "/prɛs/",
+    translation: "bosmoq, matbuot; press",
+    type: "verb",
+    usage: "Biror narsaga bosmoq; matbuot; musiqa siqmoq yoki tazyiq o'tkazmoq.",
+    examples: [
+      "<em>Press</em> the button to start the machine.",
+      "The <em>press</em> covered the story extensively.",
+      "She <em>pressed</em> her shirt before the meeting.",
+      "He <em>pressed</em> her for an answer.",
+      "Freedom of the <em>press</em> is a fundamental right."
+    ],
+    synonyms: ["push", "media", "journalism", "squeeze", "urge"]
+  },
+  {
+    word: "pressure",
+    pronunciation: "/ˈprɛʃər/",
+    translation: "bosim, tazyiq, stress",
+    type: "noun",
+    usage: "Fizik bosim; ruhiy tazyiq yoki stress.",
+    examples: [
+      "The exam created a lot of <em>pressure</em>.",
+      "Blood <em>pressure</em> should be checked regularly.",
+      "He works well under <em>pressure</em>.",
+      "She felt <em>pressure</em> to make a decision quickly.",
+      "Peer <em>pressure</em> can affect teenagers negatively."
+    ],
+    synonyms: ["stress", "force", "tension", "strain", "coercion"]
+  },
+  {
+    word: "pretend",
+    pronunciation: "/prɪˈtɛnd/",
+    translation: "bahona qilmoq, o'zini tutmoq, ko'rsatish",
+    type: "verb",
+    usage: "Haqiqat emas narsani haqiqatdek ko'rsatmoq.",
+    examples: [
+      "She <em>pretended</em> not to hear the question.",
+      "Children love to <em>pretend</em> to be superheroes.",
+      "He <em>pretended</em> to be sick to avoid school.",
+      "Don't <em>pretend</em> everything is fine when it's not.",
+      "She <em>pretended</em> to be happy at the party."
+    ],
+    synonyms: ["fake", "act", "feign", "simulate", "make believe"]
+  },
+  {
+    word: "pretty",
+    pronunciation: "/ˈprɪti/",
+    translation: "chiroyli; ancha, bir oz",
+    type: "adjective",
+    usage: "Ko'rinishi chiroyli; shuningdek «ancha» ma'nosida ravish.",
+    examples: [
+      "She wore a <em>pretty</em> dress to the party.",
+      "The garden looked <em>pretty</em> in the spring.",
+      "He is <em>pretty</em> good at cooking.",
+      "That's a <em>pretty</em> interesting idea.",
+      "It was a <em>pretty</em> long day."
+    ],
+    synonyms: ["attractive", "lovely", "quite", "fairly", "beautiful"]
+  },
+  {
+    word: "prevent",
+    pronunciation: "/prɪˈvɛnt/",
+    translation: "oldini olmoq, to'sqinlik qilmoq",
+    type: "verb",
+    usage: "Biror narsa bo'lishiga yo'l qo'ymaslik.",
+    examples: [
+      "Exercise helps to <em>prevent</em> many diseases.",
+      "The fence was built to <em>prevent</em> animals from entering.",
+      "She wanted to <em>prevent</em> any misunderstanding.",
+      "Nothing could <em>prevent</em> the storm.",
+      "He tried to <em>prevent</em> the argument from escalating."
+    ],
+    synonyms: ["stop", "avoid", "block", "deter", "inhibit"]
+  },
+  {
+    word: "previous",
+    pronunciation: "/ˈpriːviəs/",
+    translation: "avvalgi, oldingi",
+    type: "adjective",
+    usage: "Hozirgi vaqtdan oldin bo'lgan.",
+    examples: [
+      "Her <em>previous</em> job was in marketing.",
+      "The <em>previous</em> owner left some furniture behind.",
+      "Please review your <em>previous</em> notes.",
+      "He has no <em>previous</em> experience in this field.",
+      "Compared to the <em>previous</em> year, sales improved."
+    ],
+    synonyms: ["former", "earlier", "past", "prior", "preceding"]
+  },
+  {
+    word: "previously",
+    pronunciation: "/ˈpriːviəsli/",
+    translation: "avval, ilgari",
+    type: "adverb",
+    usage: "Hozirdan oldin bo'lgan vaqtda.",
+    examples: [
+      "She had <em>previously</em> worked as a teacher.",
+      "<em>Previously</em>, this building was a factory.",
+      "As I <em>previously</em> mentioned, the plan has changed.",
+      "He had <em>previously</em> visited the city.",
+      "The information <em>previously</em> given was incorrect."
+    ],
+    synonyms: ["before", "earlier", "formerly", "once", "in the past"]
+  },
+  {
+    word: "price",
+    pronunciation: "/praɪs/",
+    translation: "narx, baho",
+    type: "noun",
+    usage: "Biror narsani sotib olish uchun to'lanadigan miqdor.",
+    examples: [
+      "The <em>price</em> of oil has gone up.",
+      "She negotiated a lower <em>price</em>.",
+      "What is the <em>price</em> of this jacket?",
+      "He paid a high <em>price</em> for his mistake.",
+      "Everything has its <em>price</em>."
+    ],
+    synonyms: ["cost", "charge", "fee", "rate", "value"]
+  },
+  {
+    word: "pride",
+    pronunciation: "/praɪd/",
+    translation: "g'urur, iftixor",
+    type: "noun",
+    usage: "O'zini yoki kimnidir yaxshi ko'rganligi sababli his qilinadigan qoniqish; shuningdek ko'p g'ururli bo'lish.",
+    examples: [
+      "She felt immense <em>pride</em> when her son graduated.",
+      "He takes great <em>pride</em> in his work.",
+      "<em>Pride</em> can sometimes prevent people from asking for help.",
+      "She spoke with <em>pride</em> about her heritage.",
+      "Their team victory filled them with <em>pride</em>."
+    ],
+    synonyms: ["honor", "dignity", "self-respect", "satisfaction", "vanity"]
+  },
+  {
+    word: "priest",
+    pronunciation: "/priːst/",
+    translation: "ruhoniy, kохin",
+    type: "noun",
+    usage: "Din xizmatida bo'lgan, ibodatni boshqaruvchi kishi.",
+    examples: [
+      "The <em>priest</em> gave a sermon on Sunday.",
+      "She spoke with the <em>priest</em> after the ceremony.",
+      "The <em>priest</em> blessed the children.",
+      "He has been a <em>priest</em> for twenty years.",
+      "The <em>priest</em> led the funeral service."
+    ],
+    synonyms: ["clergyman", "pastor", "minister", "vicar", "clergy"]
+  },
+
+
+  {
+    word: "primarily",
+    pronunciation: "/praɪˈmɛrɪli/",
+    translation: "asosan, birinchi navbatda",
+    type: "adverb",
+    usage: "Birinchi yoki asosiy tarzda; ko'p jihatdan.",
+    examples: [
+      "The course is designed <em>primarily</em> for beginners.",
+      "She is <em>primarily</em> interested in science.",
+      "The problem is <em>primarily</em> one of communication.",
+      "He works <em>primarily</em> on weekends.",
+      "This project is <em>primarily</em> funded by the government."
+    ],
+    synonyms: ["mainly", "mostly", "chiefly", "largely", "above all"]
+  },
+  {
+    word: "primary",
+    pronunciation: "/ˈpraɪmɛri/",
+    translation: "asosiy, birlamchi",
+    type: "adjective",
+    usage: "Eng muhim yoki birinchi bo'lgan.",
+    examples: [
+      "Health is the <em>primary</em> concern.",
+      "She attended <em>primary</em> school in her hometown.",
+      "The <em>primary</em> goal is to pass the exam.",
+      "Water is a <em>primary</em> need for all living things.",
+      "He was the <em>primary</em> suspect in the case."
+    ],
+    synonyms: ["main", "principal", "chief", "key", "fundamental"]
+  },
+  {
+    word: "prime",
+    pronunciation: "/praɪm/",
+    translation: "asosiy, birinchi; eng yaxshi holat",
+    type: "adjective",
+    usage: "Eng yuqori sifat yoki daraja; asosiy.",
+    examples: [
+      "She is in the <em>prime</em> of her career.",
+      "Location is <em>prime</em> factor in real estate.",
+      "He is a <em>prime</em> example of hard work.",
+      "The <em>prime</em> minister announced new policies.",
+      "This is <em>prime</em> land for farming."
+    ],
+    synonyms: ["main", "top", "best", "peak", "primary"]
+  },
+  {
+    word: "principal",
+    pronunciation: "/ˈprɪnsɪpəl/",
+    translation: "direktor; asosiy, bosh",
+    type: "noun",
+    usage: "Maktab direktori; eng muhim yoki asosiy.",
+    examples: [
+      "She was called to the <em>principal</em>'s office.",
+      "The <em>principal</em> cause of the accident was speeding.",
+      "He is the <em>principal</em> investor in the project.",
+      "The school's <em>principal</em> gave a welcoming speech.",
+      "Safety is the <em>principal</em> concern."
+    ],
+    synonyms: ["director", "head", "main", "chief", "leader"]
+  },
+  {
+    word: "principle",
+    pronunciation: "/ˈprɪnsɪpəl/",
+    translation: "tamoyil, qoida, asosiy fikr",
+    type: "noun",
+    usage: "Yurish-turish yoki biror narsaning asosini belgilovchi qoida.",
+    examples: [
+      "She lives by the <em>principle</em> of honesty.",
+      "The <em>principle</em> of equality is fundamental.",
+      "He refused on <em>principle</em>.",
+      "The machine works on a simple <em>principle</em>.",
+      "These are the core <em>principles</em> of democracy."
+    ],
+    synonyms: ["rule", "belief", "value", "standard", "guideline"]
+  },
+  {
+    word: "print",
+    pronunciation: "/prɪnt/",
+    translation: "bosmоq, chop etmоq; naqsh",
+    type: "verb",
+    usage: "Qog'ozga bosib chiqarmoq; shuningdek naqsh yoki izi.",
+    examples: [
+      "Please <em>print</em> the document before the meeting.",
+      "She <em>printed</em> her name in capital letters.",
+      "The fabric has a floral <em>print</em>.",
+      "He <em>printed</em> photos of his trip.",
+      "The newspaper is <em>printed</em> every morning."
+    ],
+    synonyms: ["publish", "type", "copy", "press", "imprint"]
+  },
+  {
+    word: "prior",
+    pronunciation: "/ˈpraɪər/",
+    translation: "avvalgi, oldingi",
+    type: "adjective",
+    usage: "Biror vaqt yoki voqeadan oldin.",
+    examples: [
+      "She had no <em>prior</em> experience in coding.",
+      "<em>Prior</em> to the meeting, review the agenda.",
+      "He had a <em>prior</em> appointment at 9 AM.",
+      "No <em>prior</em> knowledge is required for this class.",
+      "The decision was made <em>prior</em> to the election."
+    ],
+    synonyms: ["previous", "earlier", "preceding", "former", "advance"]
+  },
+  {
+    word: "priority",
+    pronunciation: "/praɪˈɔːrɪti/",
+    translation: "ustuvorlik, muhimroq narsa",
+    type: "noun",
+    usage: "Boshqa narsalardan oldin bajarilishi kerak bo'lgan ish.",
+    examples: [
+      "Family is her top <em>priority</em>.",
+      "He set his <em>priorities</em> clearly.",
+      "Health should be a <em>priority</em> for everyone.",
+      "Finishing the project is our first <em>priority</em>.",
+      "She gave <em>priority</em> to urgent tasks."
+    ],
+    synonyms: ["importance", "urgency", "first concern", "precedence", "preference"]
+  },
+  {
+    word: "prison",
+    pronunciation: "/ˈprɪzən/",
+    translation: "qamoqxona, tурма",
+    type: "noun",
+    usage: "Jinoyatchilar saqlanadigan xavfsizlik muassasasi.",
+    examples: [
+      "He was sent to <em>prison</em> for three years.",
+      "She works as a guard in a <em>prison</em>.",
+      "Life in <em>prison</em> is very difficult.",
+      "He was released from <em>prison</em> last month.",
+      "The <em>prison</em> system needs significant reform."
+    ],
+    synonyms: ["jail", "penitentiary", "detention center", "correctional facility"]
+  },
+  {
+    word: "prisoner",
+    pronunciation: "/ˈprɪzənər/",
+    translation: "mahbus, asir",
+    type: "noun",
+    usage: "Qamoqda yoki asirlikda saqlanayotgan kishi.",
+    examples: [
+      "The <em>prisoner</em> was released on good behavior.",
+      "War <em>prisoners</em> must be treated humanely.",
+      "The <em>prisoner</em> escaped during the night.",
+      "She became a <em>prisoner</em> of her own habits.",
+      "The <em>prisoner</em> had been held for ten years."
+    ],
+    synonyms: ["inmate", "captive", "detainee", "convict", "hostage"]
+  },
+
+
+  {
+    word: "privacy",
+    pronunciation: "/ˈpraɪvəsi/",
+    translation: "shaxsiy hayot, maxfiylik",
+    type: "noun",
+    usage: "Boshqalardan yashiringan holda bo'lish yoki ma'lumotlarni himoya qilish.",
+    examples: [
+      "Everyone has a right to <em>privacy</em>.",
+      "The new law protects online <em>privacy</em>.",
+      "She values her <em>privacy</em> greatly.",
+      "He respected her need for <em>privacy</em>.",
+      "Social media can threaten personal <em>privacy</em>."
+    ],
+    synonyms: ["confidentiality", "seclusion", "secrecy", "solitude", "discretion"]
+  },
+  {
+    word: "private",
+    pronunciation: "/ˈpraɪvɪt/",
+    translation: "shaxsiy, maxfiy, xususiy",
+    type: "adjective",
+    usage: "Boshqalarga tegishli bo'lmagan; ommaga emas.",
+    examples: [
+      "This is a <em>private</em> matter.",
+      "She attends a <em>private</em> school.",
+      "He kept his feelings <em>private</em>.",
+      "The meeting was held in a <em>private</em> room.",
+      "They had a <em>private</em> conversation."
+    ],
+    synonyms: ["personal", "secret", "confidential", "individual", "exclusive"]
+  },
+  {
+    word: "probably",
+    pronunciation: "/ˈprɒbəbli/",
+    translation: "ehtimol, balki, ko'pincha",
+    type: "adverb",
+    usage: "Bo'lishi mumkin degan ehtimollik ma'nosida.",
+    examples: [
+      "She will <em>probably</em> arrive late.",
+      "It's <em>probably</em> the best solution.",
+      "He <em>probably</em> forgot about the meeting.",
+      "You <em>probably</em> already know this.",
+      "This is <em>probably</em> a mistake."
+    ],
+    synonyms: ["likely", "perhaps", "presumably", "in all likelihood", "most likely"]
+  },
+  {
+    word: "problem",
+    pronunciation: "/ˈprɒbləm/",
+    translation: "muammo, masala",
+    type: "noun",
+    usage: "Yechim talab qiladigan qiyin holat yoki savol.",
+    examples: [
+      "She solved the math <em>problem</em> quickly.",
+      "Traffic is a big <em>problem</em> in this city.",
+      "He has a <em>problem</em> with public speaking.",
+      "No <em>problem</em> — I can help you.",
+      "The <em>problem</em> was solved in ten minutes."
+    ],
+    synonyms: ["issue", "difficulty", "challenge", "question", "trouble"]
+  },
+  {
+    word: "procedure",
+    pronunciation: "/prəˈsiːdʒər/",
+    translation: "jarayon, tartib, protsedura",
+    type: "noun",
+    usage: "Biror narsani qilishning rasmiy yoki belgilangan tartibi.",
+    examples: [
+      "Follow the standard <em>procedure</em>.",
+      "The medical <em>procedure</em> was performed successfully.",
+      "She didn't follow the correct <em>procedure</em>.",
+      "Each step in the <em>procedure</em> must be carefully followed.",
+      "He explained the <em>procedure</em> step by step."
+    ],
+    synonyms: ["process", "method", "protocol", "routine", "system"]
+  },
+  {
+    word: "proceed",
+    pronunciation: "/prəˈsiːd/",
+    translation: "davom etmoq, oldinga yurmoq",
+    type: "verb",
+    usage: "Bir ishni to'xtatmay davom ettirmoq; oldinga harakat qilmoq.",
+    examples: [
+      "Please <em>proceed</em> to the next question.",
+      "The meeting will <em>proceed</em> as planned.",
+      "She hesitated before deciding to <em>proceed</em>.",
+      "He asked if it was safe to <em>proceed</em>.",
+      "Work can <em>proceed</em> once the approval is received."
+    ],
+    synonyms: ["continue", "advance", "go ahead", "move on", "progress"]
+  },
+  {
+    word: "process",
+    pronunciation: "/ˈprɒsɛs/",
+    translation: "jarayon, bosqich; qayta ishlash",
+    type: "noun",
+    usage: "Bir natijaga olib keladigan harakatlar ketma-ketligi.",
+    examples: [
+      "Learning a language is a slow <em>process</em>.",
+      "The <em>process</em> of applying for a visa took weeks.",
+      "She <em>processed</em> the application quickly.",
+      "We need to improve our hiring <em>process</em>.",
+      "The data is being <em>processed</em>."
+    ],
+    synonyms: ["procedure", "method", "operation", "mechanism", "system"]
+  },
+  {
+    word: "produce",
+    pronunciation: "/prəˈduːs/",
+    translation: "ishlab chiqarmoq, hosil bermoq",
+    type: "verb",
+    usage: "Biror mahsulot yoki natija yaratmoq; hosil chiqarmoq.",
+    examples: [
+      "The factory <em>produces</em> 500 cars per day.",
+      "She <em>produced</em> excellent results.",
+      "This farm <em>produces</em> fresh vegetables.",
+      "He <em>produced</em> a new album last year.",
+      "Stress can <em>produce</em> negative health effects."
+    ],
+    synonyms: ["make", "create", "generate", "yield", "manufacture"]
+  },
+  {
+    word: "producer",
+    pronunciation: "/prəˈduːsər/",
+    translation: "ishlab chiqaruvchi, prodyuser",
+    type: "noun",
+    usage: "Biror narsa ishlab chiqaruvchi kishi yoki tashkilot; film prodyuseri.",
+    examples: [
+      "She is a successful film <em>producer</em>.",
+      "The <em>producer</em> organized the entire concert.",
+      "He is the largest oil <em>producer</em> in the region.",
+      "The music <em>producer</em> worked with many famous artists.",
+      "The <em>producer</em> supervised the making of the documentary."
+    ],
+    synonyms: ["manufacturer", "maker", "creator", "filmmaker", "organizer"]
+  },
+  {
+    word: "product",
+    pronunciation: "/ˈprɒdʌkt/",
+    translation: "mahsulot, natija",
+    type: "noun",
+    usage: "Ishlab chiqarilgan yoki sotiluvchi narsa; biror jarayonning natijasi.",
+    examples: [
+      "The new <em>product</em> sold out in one day.",
+      "Her success is a <em>product</em> of hard work.",
+      "The company launched a new <em>product</em> line.",
+      "Read the <em>product</em> label before use.",
+      "This <em>product</em> is made from recycled materials."
+    ],
+    synonyms: ["item", "good", "result", "output", "article"]
+  },
+
+
+  {
+    word: "production",
+    pronunciation: "/prəˈdʌkʃən/",
+    translation: "ishlab chiqarish, uzun jarayon",
+    type: "noun",
+    usage: "Narsa ishlab chiqarish jarayoni; teatr yoki kino namoyishi.",
+    examples: [
+      "Car <em>production</em> increased last year.",
+      "The film's <em>production</em> cost millions.",
+      "She joined the Broadway <em>production</em>.",
+      "Oil <em>production</em> fell due to the war.",
+      "The <em>production</em> of the album took six months."
+    ],
+    synonyms: ["manufacturing", "output", "show", "creation", "performance"]
+  },
+  {
+    word: "profession",
+    pronunciation: "/prəˈfɛʃən/",
+    translation: "kasb, mutaxassislik",
+    type: "noun",
+    usage: "Ta'lim va ko'nikmani talab qiladigan ish yoki kasb.",
+    examples: [
+      "Teaching is a noble <em>profession</em>.",
+      "She chose medicine as her <em>profession</em>.",
+      "What is your <em>profession</em>?",
+      "Lawyers are respected members of their <em>profession</em>.",
+      "He entered the <em>profession</em> at age 25."
+    ],
+    synonyms: ["career", "occupation", "vocation", "trade", "calling"]
+  },
+  {
+    word: "professional",
+    pronunciation: "/prəˈfɛʃənəl/",
+    translation: "professional, mutaxassis",
+    type: "adjective",
+    usage: "Malakali va tajribali; ish bilan bog'liq rasmiy.",
+    examples: [
+      "She is a <em>professional</em> tennis player.",
+      "Always behave in a <em>professional</em> manner.",
+      "He hired a <em>professional</em> photographer.",
+      "Her <em>professional</em> experience is impressive.",
+      "He looks very <em>professional</em> in his suit."
+    ],
+    synonyms: ["expert", "skilled", "qualified", "specialist", "formal"]
+  },
+  {
+    word: "professor",
+    pronunciation: "/prəˈfɛsər/",
+    translation: "professor, o'qituvchi",
+    type: "noun",
+    usage: "Universitetda dars beradigan yuqori malakali akademik.",
+    examples: [
+      "She is a <em>professor</em> of economics.",
+      "The <em>professor</em> gave a fascinating lecture.",
+      "He became a full <em>professor</em> at 40.",
+      "The <em>professor</em> assigned three books for the course.",
+      "She studied under a renowned <em>professor</em>."
+    ],
+    synonyms: ["lecturer", "educator", "academic", "teacher", "scholar"]
+  },
+  {
+    word: "profile",
+    pronunciation: "/ˈproʊfaɪl/",
+    translation: "profil, qiyofа, batafsil ma'lumot",
+    type: "noun",
+    usage: "Kishining yon tomondan ko'rinishi; ijtimoiy tarmoqdagi sahifa.",
+    examples: [
+      "She created a profile on the job website.",
+      "His <em>profile</em> picture shows him smiling.",
+      "The company has a high <em>profile</em> in the market.",
+      "She drew a <em>profile</em> of the subject's face.",
+      "His LinkedIn <em>profile</em> is very detailed."
+    ],
+    synonyms: ["outline", "biography", "account", "summary", "image"]
+  },
+  {
+    word: "profit",
+    pronunciation: "/ˈprɒfɪt/",
+    translation: "foyda, daromad",
+    type: "noun",
+    usage: "Daromaddan xarajatlarni chegirgandan keyin qolgan miqdor.",
+    examples: [
+      "The company made a large <em>profit</em> this year.",
+      "She invested her <em>profit</em> back into the business.",
+      "He sold the house at a big <em>profit</em>.",
+      "Non-profit organizations don't aim for <em>profit</em>.",
+      "Their <em>profit</em> margin increased by 10%."
+    ],
+    synonyms: ["earnings", "gain", "return", "revenue", "surplus"]
+  },
+  {
+    word: "program",
+    pronunciation: "/ˈproʊɡræm/",
+    translation: "dastur, reja, program",
+    type: "noun",
+    usage: "Kompyuter dasturi; ta'lim yoki ijtimoiy dastur; rejalashtirish.",
+    examples: [
+      "She enrolled in a two-year degree <em>program</em>.",
+      "The <em>program</em> crashed and I lost my work.",
+      "The government launched a job training <em>program</em>.",
+      "He wrote a <em>program</em> to automate the task.",
+      "The TV <em>program</em> airs every Sunday."
+    ],
+    synonyms: ["plan", "schedule", "software", "curriculum", "scheme"]
+  },
+  {
+    word: "progress",
+    pronunciation: "/ˈprɒɡrɛs/",
+    translation: "taraqqiyot, rivojlanish; ilgarilamoq",
+    type: "noun",
+    usage: "Oldinga harakat yoki yaxshilanish; shuningdek fe'l sifatida.",
+    examples: [
+      "She made great <em>progress</em> in her English.",
+      "Technology <em>progresses</em> faster than ever.",
+      "The construction work is in <em>progress</em>.",
+      "We must monitor his <em>progress</em> weekly.",
+      "The talks are <em>progressing</em> slowly."
+    ],
+    synonyms: ["advancement", "development", "improvement", "growth", "headway"]
+  },
+  {
+    word: "project",
+    pronunciation: "/ˈprɒdʒɛkt/",
+    translation: "loyiha; tashlаmoq, proektsiya",
+    type: "noun",
+    usage: "Muayyan maqsad uchun ishlar to'plami; nur yoki tasvir proyeksiyasi.",
+    examples: [
+      "She led the construction <em>project</em>.",
+      "He is working on a research <em>project</em>.",
+      "The <em>project</em> was completed ahead of schedule.",
+      "The teacher asked us to do a group <em>project</em>.",
+      "They <em>projected</em> the slides onto the screen."
+    ],
+    synonyms: ["plan", "scheme", "task", "assignment", "venture"]
+  },
+  {
+    word: "prominent",
+    pronunciation: "/ˈprɒmɪnənt/",
+    translation: "mashhur, ko'zga tashlanadigan, taniqli",
+    type: "adjective",
+    usage: "Ko'zga ko'rinarli yoki taniqli bo'lgan.",
+    examples: [
+      "She is a <em>prominent</em> figure in education.",
+      "The building has a <em>prominent</em> position on the hill.",
+      "He played a <em>prominent</em> role in the movement.",
+      "Her work made her a <em>prominent</em> scientist.",
+      "The bridge is the most <em>prominent</em> landmark in the city."
+    ],
+    synonyms: ["famous", "notable", "distinguished", "leading", "conspicuous"]
+  },
+
+
+  {
+    word: "promise",
+    pronunciation: "/ˈprɒmɪs/",
+    translation: "va'da; va'da bermoq",
+    type: "noun",
+    usage: "Biror narsani qilishga majburiyat olmoq.",
+    examples: [
+      "She kept her <em>promise</em>.",
+      "He made a <em>promise</em> to be on time.",
+      "Don't make a <em>promise</em> you can't keep.",
+      "He <em>promised</em> to call her back.",
+      "The new student shows great <em>promise</em>."
+    ],
+    synonyms: ["vow", "pledge", "commitment", "assurance", "guarantee"]
+  },
+  {
+    word: "promote",
+    pronunciation: "/prəˈmoʊt/",
+    translation: "targ'ib qilmoq, lavozimga ko'tarmoq",
+    type: "verb",
+    usage: "Biror narsani ommalashtirmoq yoki rag'batlantimoq; yuqori lavozimga ko'tarmoq.",
+    examples: [
+      "She was <em>promoted</em> to senior manager.",
+      "The ad was designed to <em>promote</em> healthy eating.",
+      "He <em>promotes</em> his music on social media.",
+      "The company is <em>promoting</em> a new product.",
+      "She was <em>promoted</em> after two years of hard work."
+    ],
+    synonyms: ["advance", "advertise", "boost", "elevate", "publicize"]
+  },
+  {
+    word: "prompt",
+    pronunciation: "/prɒmpt/",
+    translation: "tez, o'z vaqtida; undamoq",
+    type: "adjective",
+    usage: "O'z vaqtida yoki tez bajarilgan; shuningdek undamoq yoki eslatmoq fe'li.",
+    examples: [
+      "Please give a <em>prompt</em> reply.",
+      "The accident <em>prompted</em> a change in safety rules.",
+      "She is always <em>prompt</em> for meetings.",
+      "The teacher <em>prompted</em> the student to speak.",
+      "A <em>prompt</em> response is appreciated."
+    ],
+    synonyms: ["quick", "timely", "on time", "encourage", "trigger"]
+  },
+  {
+    word: "proof",
+    pronunciation: "/pruːf/",
+    translation: "dalil, isbot",
+    type: "noun",
+    usage: "Biror narsaning to'g'ri yoki mavjudligini ko'rsatuvchi narsa.",
+    examples: [
+      "She provided <em>proof</em> of her identity.",
+      "There is no <em>proof</em> that he was there.",
+      "He showed <em>proof</em> of payment.",
+      "The evidence was <em>proof</em> enough for the jury.",
+      "She needed <em>proof</em> before believing the story."
+    ],
+    synonyms: ["evidence", "verification", "confirmation", "demonstration", "test"]
+  },
+  {
+    word: "proper",
+    pronunciation: "/ˈprɒpər/",
+    translation: "to'g'ri, mos, tegishli",
+    type: "adjective",
+    usage: "Qoidaga yoki holatlarga mos; to'g'ri.",
+    examples: [
+      "Use <em>proper</em> grammar in your essay.",
+      "She wore <em>proper</em> clothing to the interview.",
+      "Please follow the <em>proper</em> procedure.",
+      "He didn't receive <em>proper</em> training.",
+      "Wash your hands in the <em>proper</em> way."
+    ],
+    synonyms: ["correct", "suitable", "appropriate", "right", "formal"]
+  },
+  {
+    word: "properly",
+    pronunciation: "/ˈprɒpərli/",
+    translation: "to'g'ri tarzda, tegishli ravishda",
+    type: "adverb",
+    usage: "Kerakli tarzda yoki qoidaga muvofiq.",
+    examples: [
+      "The machine must be used <em>properly</em>.",
+      "He didn't explain the rule <em>properly</em>.",
+      "Please sign the form <em>properly</em>.",
+      "She learned how to behave <em>properly</em>.",
+      "Food must be stored <em>properly</em> to stay fresh."
+    ],
+    synonyms: ["correctly", "appropriately", "rightly", "suitably", "well"]
+  },
+  {
+    word: "property",
+    pronunciation: "/ˈprɒpərti/",
+    translation: "mulk, yer, xususiyat",
+    type: "noun",
+    usage: "Kimgadir tegishli narsa yoki yer; biror narsaning xususiyati.",
+    examples: [
+      "She owns several <em>properties</em> in the city.",
+      "Stealing is taking someone else's <em>property</em>.",
+      "Water has unique chemical <em>properties</em>.",
+      "The company sold its <em>property</em> last year.",
+      "Private <em>property</em> is protected by law."
+    ],
+    synonyms: ["possession", "asset", "land", "characteristic", "trait"]
+  },
+  {
+    word: "proportion",
+    pronunciation: "/prəˈpɔːrʃən/",
+    translation: "nisbat, ulush, mutanosiblik",
+    type: "noun",
+    usage: "Bir narsaning ikkinchisiga nisbati; muvozanat.",
+    examples: [
+      "A large <em>proportion</em> of students passed.",
+      "The painting has perfect <em>proportions</em>.",
+      "He gave a speech that was out of <em>proportion</em> to the issue.",
+      "The <em>proportion</em> of women in leadership is growing.",
+      "Mix the ingredients in the correct <em>proportions</em>."
+    ],
+    synonyms: ["ratio", "share", "balance", "fraction", "percentage"]
+  },
+  {
+    word: "proposal",
+    pronunciation: "/prəˈpoʊzəl/",
+    translation: "taklif, taklifnoma; nikoh taklifi",
+    type: "noun",
+    usage: "Biror ish yoki harakatni taklif qilish; sovchilik.",
+    examples: [
+      "She accepted his marriage <em>proposal</em>.",
+      "The committee reviewed the budget <em>proposal</em>.",
+      "He made a detailed <em>proposal</em> for the project.",
+      "The <em>proposal</em> was rejected.",
+      "She wrote a business <em>proposal</em> for investors."
+    ],
+    synonyms: ["offer", "suggestion", "plan", "bid", "recommendation"]
+  },
+  {
+    word: "propose",
+    pronunciation: "/prəˈpoʊz/",
+    translation: "taklif qilmoq, nikoh so'ramoq",
+    type: "verb",
+    usage: "Biror ish yoki g'oyani taklif qilmoq; nikoh so'ramoq.",
+    examples: [
+      "He <em>proposed</em> a new solution to the problem.",
+      "She <em>proposed</em> at the restaurant.",
+      "They <em>proposed</em> changing the meeting time.",
+      "He <em>proposed</em> that the team take a break.",
+      "The manager <em>proposed</em> a new policy."
+    ],
+    synonyms: ["suggest", "recommend", "offer", "put forward", "ask to marry"]
+  },
+
+
+  {
+    word: "proposed",
+    pronunciation: "/prəˈpoʊzd/",
+    translation: "taklif qilingan, loyiha",
+    type: "adjective",
+    usage: "Taklif sifatida qo'yilgan yoki ko'rib chiqilayotgan.",
+    examples: [
+      "The <em>proposed</em> plan was rejected by the board.",
+      "He reviewed the <em>proposed</em> changes.",
+      "The <em>proposed</em> law would affect thousands of people.",
+      "She studied the <em>proposed</em> budget carefully.",
+      "The <em>proposed</em> site for the new school has been approved."
+    ],
+    synonyms: ["suggested", "planned", "recommended", "drafted", "intended"]
+  },
+  {
+    word: "prosecutor",
+    pronunciation: "/ˈprɒsɪkjuːtər/",
+    translation: "prokuror, ayblоvchi",
+    type: "noun",
+    usage: "Sud ishida jinoyatchi sifatida ayblovchi hukumat vakili.",
+    examples: [
+      "The <em>prosecutor</em> presented strong evidence.",
+      "She is an experienced <em>prosecutor</em>.",
+      "The <em>prosecutor</em> asked for a ten-year sentence.",
+      "The defense lawyer challenged the <em>prosecutor</em>'s claims.",
+      "The <em>prosecutor</em> called three witnesses."
+    ],
+    synonyms: ["attorney", "counsel", "DA", "state attorney", "barrister"]
+  },
+  {
+    word: "prospect",
+    pronunciation: "/ˈprɒspɛkt/",
+    translation: "istiqbol, umid, imkoniyat",
+    type: "noun",
+    usage: "Kelajakdagi imkoniyat yoki mumkin bo'lgan natija.",
+    examples: [
+      "The job has good career <em>prospects</em>.",
+      "She was excited about the <em>prospect</em> of traveling.",
+      "He faced the <em>prospect</em> of losing his job.",
+      "The economic <em>prospects</em> look bright.",
+      "She didn't like the <em>prospect</em> of starting over."
+    ],
+    synonyms: ["outlook", "possibility", "chance", "expectation", "hope"]
+  },
+  {
+    word: "protect",
+    pronunciation: "/prəˈtɛkt/",
+    translation: "himoya qilmoq, saqlаmoq",
+    type: "verb",
+    usage: "Xavf yoki zarardan saqlamoq.",
+    examples: [
+      "She wore a helmet to <em>protect</em> her head.",
+      "We must <em>protect</em> endangered species.",
+      "The law is designed to <em>protect</em> citizens.",
+      "He tried to <em>protect</em> his friends from harm.",
+      "Sunscreen helps <em>protect</em> your skin."
+    ],
+    synonyms: ["guard", "defend", "shield", "safeguard", "preserve"]
+  },
+  {
+    word: "protection",
+    pronunciation: "/prəˈtɛkʃən/",
+    translation: "himoya, muhofaza",
+    type: "noun",
+    usage: "Xavf yoki zarardan himoya qilish holati yoki vositasi.",
+    examples: [
+      "The law provides <em>protection</em> for workers.",
+      "She sought <em>protection</em> from the storm.",
+      "Environmental <em>protection</em> is a global priority.",
+      "He offered her his <em>protection</em>.",
+      "A strong password is basic online <em>protection</em>."
+    ],
+    synonyms: ["defense", "security", "safety", "shelter", "guard"]
+  },
+  {
+    word: "protein",
+    pronunciation: "/ˈproʊtiːn/",
+    translation: "oqsil, protein",
+    type: "noun",
+    usage: "Tirik organizmlar uchun zaruriy bo'lgan biologik molekula.",
+    examples: [
+      "Meat and eggs are rich in <em>protein</em>.",
+      "Athletes need extra <em>protein</em>.",
+      "She drinks a <em>protein</em> shake after workouts.",
+      "<em>Protein</em> helps build and repair muscles.",
+      "Plant-based <em>proteins</em> include beans and lentils."
+    ],
+    synonyms: ["nutrient", "amino acid", "macronutrient", "building block"]
+  },
+  {
+    word: "protest",
+    pronunciation: "/ˈproʊtɛst/",
+    translation: "norozilik, e'tiroz bildirmoq",
+    type: "noun",
+    usage: "Biror narsa yoki qarorga qarshi ommaviy norozilik.",
+    examples: [
+      "Thousands joined the <em>protest</em>.",
+      "She <em>protested</em> against the unfair decision.",
+      "The students held a <em>protest</em> outside the school.",
+      "He <em>protested</em> loudly when his idea was rejected.",
+      "The <em>protest</em> turned violent."
+    ],
+    synonyms: ["demonstration", "objection", "rally", "march", "opposition"]
+  },
+  {
+    word: "proud",
+    pronunciation: "/praʊd/",
+    translation: "g'ururli, faxrlanuvchi",
+    type: "adjective",
+    usage: "O'zi yoki boshqasi haqida g'ururli his qilmoq.",
+    examples: [
+      "She was very <em>proud</em> of her son's achievement.",
+      "He is too <em>proud</em> to ask for help.",
+      "I am <em>proud</em> to be part of this team.",
+      "She wore a <em>proud</em> smile on graduation day.",
+      "He felt <em>proud</em> when his work was recognized."
+    ],
+    synonyms: ["pleased", "satisfied", "honored", "arrogant", "dignified"]
+  },
+  {
+    word: "prove",
+    pronunciation: "/pruːv/",
+    translation: "isbotlamoq, ko'rsatmoq",
+    type: "verb",
+    usage: "Biror narsaning to'g'riligini dalil bilan ko'rsatmoq.",
+    examples: [
+      "She worked hard to <em>prove</em> her ability.",
+      "He tried to <em>prove</em> his innocence.",
+      "The experiment <em>proved</em> the theory.",
+      "She <em>proved</em> that hard work pays off.",
+      "Time will <em>prove</em> who was right."
+    ],
+    synonyms: ["demonstrate", "show", "verify", "confirm", "establish"]
+  },
+  {
+    word: "provide",
+    pronunciation: "/prəˈvaɪd/",
+    translation: "bermoq, ta'minlamoq",
+    type: "verb",
+    usage: "Kimgadir biror narsa bermoq yoki ta'minlamoq.",
+    examples: [
+      "She <em>provided</em> all the necessary documents.",
+      "The school <em>provides</em> free meals.",
+      "He <em>provided</em> excellent customer service.",
+      "Please <em>provide</em> your contact information.",
+      "The project <em>provided</em> jobs for 200 people."
+    ],
+    synonyms: ["supply", "offer", "give", "furnish", "deliver"]
+  },
+
+
+  {
+    word: "provider",
+    pronunciation: "/prəˈvaɪdər/",
+    translation: "ta'minlovchi, xizmat ko'rsatuvchi",
+    type: "noun",
+    usage: "Biror xizmat yoki mahsulotni ta'minovchi kishi yoki tashkilot.",
+    examples: [
+      "She is the main <em>provider</em> for her family.",
+      "They changed their internet <em>provider</em>.",
+      "The healthcare <em>provider</em> treats thousands of patients.",
+      "He is a reliable service <em>provider</em>.",
+      "Choose a <em>provider</em> that offers good customer support."
+    ],
+    synonyms: ["supplier", "caregiver", "source", "vendor", "contributor"]
+  },
+  {
+    word: "province",
+    pronunciation: "/ˈprɒvɪns/",
+    translation: "viloyat, hudud, shtat",
+    type: "noun",
+    usage: "Davlatning ma'muriy hududi; shuningdek bilim yoki mas'uliyat sohasini anglatadi.",
+    examples: [
+      "She was born in a small <em>province</em>.",
+      "This is a matter for the <em>province</em> to decide.",
+      "He represents the northern <em>province</em>.",
+      "Each <em>province</em> has its own governor.",
+      "The issue falls outside my <em>province</em>."
+    ],
+    synonyms: ["region", "territory", "area", "state", "district"]
+  },
+  {
+    word: "provision",
+    pronunciation: "/prəˈvɪʒən/",
+    translation: "ta'minlash, zahira, modda",
+    type: "noun",
+    usage: "Biror narsa bilan ta'minlash; qonun moddasi; oziq-ovqat zahirasi.",
+    examples: [
+      "The government made <em>provision</em> for the homeless.",
+      "The contract includes a <em>provision</em> for early termination.",
+      "They stocked up on <em>provisions</em> before the storm.",
+      "Adequate <em>provision</em> of healthcare is essential.",
+      "The <em>provision</em> of clean water is a basic right."
+    ],
+    synonyms: ["supply", "arrangement", "clause", "measure", "preparation"]
+  },
+  {
+    word: "psychological",
+    pronunciation: "/ˌsaɪkəˈlɒdʒɪkəl/",
+    translation: "psixologik, ruhiy",
+    type: "adjective",
+    usage: "Insonning aqli va tuyg'ulariga oid.",
+    examples: [
+      "She suffered <em>psychological</em> trauma.",
+      "The <em>psychological</em> effects of stress are serious.",
+      "He needs <em>psychological</em> support.",
+      "The film explores <em>psychological</em> themes.",
+      "Good parenting has a positive <em>psychological</em> impact on children."
+    ],
+    synonyms: ["mental", "emotional", "cognitive", "behavioral", "subconscious"]
+  },
+  {
+    word: "psychologist",
+    pronunciation: "/saɪˈkɒlədʒɪst/",
+    translation: "psixolog",
+    type: "noun",
+    usage: "Insonning xulq-atvori va aqliy jarayonlarini o'rganuvchi mutaxassis.",
+    examples: [
+      "She visited a <em>psychologist</em> to manage anxiety.",
+      "The school employs a <em>psychologist</em>.",
+      "He became a child <em>psychologist</em>.",
+      "A <em>psychologist</em> helped her work through her fears.",
+      "The <em>psychologist</em> conducted tests to measure IQ."
+    ],
+    synonyms: ["therapist", "counselor", "clinician", "analyst", "mental health professional"]
+  },
+  {
+    word: "psychology",
+    pronunciation: "/saɪˈkɒlədʒi/",
+    translation: "psixologiya",
+    type: "noun",
+    usage: "Insonning xulq-atvori va aqliy jarayonlarini o'rganuvchi fan.",
+    examples: [
+      "She studied <em>psychology</em> at university.",
+      "<em>Psychology</em> helps explain human behavior.",
+      "He uses <em>psychology</em> to motivate his team.",
+      "Consumer <em>psychology</em> influences advertising strategies.",
+      "Child <em>psychology</em> focuses on development in early life."
+    ],
+    synonyms: ["mental science", "behavioral science", "psychoanalysis", "cognitive science"]
+  },
+  {
+    word: "public",
+    pronunciation: "/ˈpʌblɪk/",
+    translation: "jamoat, ommaviy, xalq",
+    type: "adjective",
+    usage: "Ommaga oid yoki hammaga ochiq.",
+    examples: [
+      "This is a <em>public</em> park — everyone can use it.",
+      "She made a <em>public</em> statement.",
+      "He is a well-known <em>public</em> figure.",
+      "The library is a <em>public</em> resource.",
+      "<em>Public</em> transportation is affordable."
+    ],
+    synonyms: ["open", "communal", "civic", "general", "shared"]
+  },
+  {
+    word: "publication",
+    pronunciation: "/ˌpʌblɪˈkeɪʃən/",
+    translation: "nashr, chop etish",
+    type: "noun",
+    usage: "Kitob, jurnal yoki boshqa chop etilgan material; nashr qilish jarayoni.",
+    examples: [
+      "Her <em>publication</em> was praised by critics.",
+      "The journal accepts new <em>publications</em> monthly.",
+      "He is proud of his research <em>publication</em>.",
+      "The <em>publication</em> date is next month.",
+      "She has three academic <em>publications</em>."
+    ],
+    synonyms: ["book", "issue", "release", "edition", "printing"]
+  },
+  {
+    word: "publicly",
+    pronunciation: "/ˈpʌblɪkli/",
+    translation: "ommaviy ravishda, ochiq",
+    type: "adverb",
+    usage: "Ommaviy yoki hamma ko'radigan tarzda.",
+    examples: [
+      "She <em>publicly</em> apologized for her mistake.",
+      "He <em>publicly</em> announced his resignation.",
+      "The company was <em>publicly</em> criticized.",
+      "She spoke <em>publicly</em> about her experience.",
+      "The information was <em>publicly</em> available."
+    ],
+    synonyms: ["openly", "in public", "officially", "outwardly", "notoriously"]
+  },
+  {
+    word: "publish",
+    pronunciation: "/ˈpʌblɪʃ/",
+    translation: "nashr etmoq, chop etmoq",
+    type: "verb",
+    usage: "Kitob, maqola yoki ma'lumotni ommaga taqdim etmoq.",
+    examples: [
+      "She <em>published</em> her first novel at 25.",
+      "The journal will <em>publish</em> his research.",
+      "He <em>published</em> a post on social media.",
+      "When will the book be <em>published</em>?",
+      "They <em>publish</em> a new magazine every month."
+    ],
+    synonyms: ["release", "print", "issue", "distribute", "broadcast"]
+  },
+
+
+  {
+    word: "publisher",
+    pronunciation: "/ˈpʌblɪʃər/",
+    translation: "nashriyot, noshir",
+    type: "noun",
+    usage: "Kitob yoki boshqa materiallarni nashr qiluvchi kishi yoki tashkilot.",
+    examples: [
+      "She sent her manuscript to a <em>publisher</em>.",
+      "The <em>publisher</em> offered her a book deal.",
+      "He works for a major <em>publisher</em> in New York.",
+      "The <em>publisher</em> rejected the book at first.",
+      "She became her own <em>publisher</em> online."
+    ],
+    synonyms: ["editor", "press", "house", "printing company", "distributor"]
+  },
+  {
+    word: "pull",
+    pronunciation: "/pʊl/",
+    translation: "tortmoq, tortib olmoq",
+    type: "verb",
+    usage: "Biror narsani o'ziga qarab harakatlantirmoq.",
+    examples: [
+      "She <em>pulled</em> the door open.",
+      "He <em>pulled</em> out a chair and sat down.",
+      "The horse <em>pulled</em> the cart.",
+      "<em>Pull</em> the rope tightly.",
+      "The dentist <em>pulled</em> out her tooth."
+    ],
+    synonyms: ["drag", "tug", "draw", "haul", "yank"]
+  },
+  {
+    word: "punishment",
+    pronunciation: "/ˈpʌnɪʃmənt/",
+    translation: "jazo, ceza",
+    type: "noun",
+    usage: "Noto'g'ri xatti-harakat uchun beriladigan jazo.",
+    examples: [
+      "The <em>punishment</em> for cheating is expulsion.",
+      "He received a harsh <em>punishment</em>.",
+      "She believed the <em>punishment</em> was too severe.",
+      "The court decided on the appropriate <em>punishment</em>.",
+      "Without <em>punishment</em>, rules become meaningless."
+    ],
+    synonyms: ["penalty", "sentence", "sanction", "discipline", "consequence"]
+  },
+  {
+    word: "purchase",
+    pronunciation: "/ˈpɜːrtʃəs/",
+    translation: "sotib olmoq; xarid",
+    type: "verb",
+    usage: "Pul evaziga biror narsa olmoq.",
+    examples: [
+      "She <em>purchased</em> a new laptop.",
+      "He made a big <em>purchase</em> at the store.",
+      "You can <em>purchase</em> tickets online.",
+      "The <em>purchase</em> was completed in minutes.",
+      "He <em>purchased</em> the house for $300,000."
+    ],
+    synonyms: ["buy", "acquire", "obtain", "get", "procure"]
+  },
+  {
+    word: "pure",
+    pronunciation: "/pjʊr/",
+    translation: "toza, sof, aralaшмagan",
+    type: "adjective",
+    usage: "Hech narsa bilan aralashtirilmagan; asl holda.",
+    examples: [
+      "The water was <em>pure</em> and clean.",
+      "She acted from <em>pure</em> kindness.",
+      "This is <em>pure</em> gold — no alloy.",
+      "It was <em>pure</em> luck that he survived.",
+      "She has a <em>pure</em> and honest heart."
+    ],
+    synonyms: ["clean", "clear", "unmixed", "genuine", "innocent"]
+  },
+  {
+    word: "purpose",
+    pronunciation: "/ˈpɜːrpəs/",
+    translation: "maqsad, niyat",
+    type: "noun",
+    usage: "Biror narsa yoki harakat sababi yoki maqsadi.",
+    examples: [
+      "What is the <em>purpose</em> of this meeting?",
+      "She felt a strong sense of <em>purpose</em>.",
+      "He did it on <em>purpose</em>.",
+      "The <em>purpose</em> of education is to grow as a person.",
+      "Every action should have a clear <em>purpose</em>."
+    ],
+    synonyms: ["goal", "aim", "intention", "reason", "objective"]
+  },
+  {
+    word: "pursue",
+    pronunciation: "/pərˈsuː/",
+    translation: "izlamoq, ta'qib etmoq, orqasidan bormoq",
+    type: "verb",
+    usage: "Biror maqsad yoki kishi ortidan bormoq.",
+    examples: [
+      "She decided to <em>pursue</em> a career in medicine.",
+      "He <em>pursued</em> the suspect down the street.",
+      "She <em>pursues</em> her hobbies with great energy.",
+      "They <em>pursued</em> every possible option.",
+      "He was encouraged to <em>pursue</em> his dreams."
+    ],
+    synonyms: ["chase", "follow", "seek", "go after", "aim for"]
+  },
+  {
+    word: "push",
+    pronunciation: "/pʊʃ/",
+    translation: "itarmoq, surmoq",
+    type: "verb",
+    usage: "Biror narsani oldinga yoki o'zidan uzoqqa surmoq.",
+    examples: [
+      "She <em>pushed</em> the door open.",
+      "He <em>pushed</em> himself to study harder.",
+      "Don't <em>push</em> others in line.",
+      "She <em>pushed</em> the button to ring the bell.",
+      "He <em>pushed</em> the car when it wouldn't start."
+    ],
+    synonyms: ["shove", "press", "propel", "drive", "thrust"]
+  },
+  {
+    word: "put",
+    pronunciation: "/pʊt/",
+    translation: "qo'ymoq, joylashtirmoq",
+    type: "verb",
+    usage: "Biror narsani muayyan joyga qo'ymoq.",
+    examples: [
+      "Please <em>put</em> your bag on the shelf.",
+      "She <em>put</em> her phone away during class.",
+      "He <em>put</em> a lot of effort into his work.",
+      "Can you <em>put</em> it in writing?",
+      "She <em>put</em> the children to bed at 8."
+    ],
+    synonyms: ["place", "set", "lay", "position", "deposit"]
+  }
+];
+
+
+function getBadgeClass(type) {
+  const map = {
+    noun: "noun", verb: "verb", adjective: "adjective",
+    adverb: "adverb", pronoun: "pronoun", preposition: "preposition",
+    conjunction: "conjunction", abbreviation: "abbreviation"
+  };
+  return map[type] || "noun";
+}
+function getTypeLabel(type) {
+  const labels = {
+    noun: "Ot", verb: "Fe'l", adjective: "Sifat", adverb: "Ravish",
+    pronoun: "Olmosh", preposition: "Old ko'makchi",
+    conjunction: "Bog'lovchi", abbreviation: "Qisqartma"
+  };
+  return labels[type] || type;
+}
+function renderCards(data) {
+  const grid = document.getElementById("wordGrid");
+  const counter = document.getElementById("counter");
+  grid.innerHTML = "";
+  counter.textContent = data.length + " ta so'z";
+  if (data.length === 0) {
+    grid.innerHTML = '<div class="no-results">🔍 Hech narsa topilmadi</div>';
+    return;
+  }
+  data.forEach(w => {
+    const examplesHtml = w.examples.map(ex =>
+      `<li>${ex}</li>`
+    ).join("");
+    const synonymsHtml = w.synonyms.map(s =>
+      `<span class="syn-tag">${s}</span>`
+    ).join("");
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="card-header">
+        <div class="word-info">
+          <div class="word">${w.word}</div>
+          <div class="pronunciation">${w.pronunciation}</div>
+          <div class="translation">${w.translation}</div>
+        </div>
+        <span class="badge ${getBadgeClass(w.type)}">${getTypeLabel(w.type)}</span>
+      </div>
+      <div class="card-body">
+        <div class="section-title">📌 Qo'llanilishi</div>
+        <div class="usage">${w.usage}</div>
+        <div class="section-title">💬 Misollar</div>
+        <ul class="examples">${examplesHtml}</ul>
+        <div class="section-title">🔗 Sinonimlar</div>
+        <div class="synonyms">${synonymsHtml}</div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+function filterCards() {
+  const query = document.getElementById("searchInput").value.toLowerCase();
+  const type = document.getElementById("filterType").value;
+  const filtered = words.filter(w => {
+    const matchType = type === "all" || w.type === type;
+    const matchSearch = !query ||
+      w.word.toLowerCase().includes(query) ||
+      w.translation.toLowerCase().includes(query);
+    return matchType && matchSearch;
+  });
+  renderCards(filtered);
+}
+document.getElementById("searchInput").addEventListener("input", filterCards);
+document.getElementById("filterType").addEventListener("change", filterCards);
+renderCards(words);
+</script>
+</body>
+</html>
