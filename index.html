@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>So'z Yodlash | Vocabulary Trainer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-icon">📚</span>
+        <div>
+          <h1>So'z Yodlash Trenajori</h1>
+          <p class="subtitle">Vocabulary Trainer &middot; US talaffuz bilan</p>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-num" id="totalCount">0</span>
+          <span class="stat-label">So'zlar</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num" id="learnedCount">0</span>
+          <span class="stat-label">O'rganildi</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <div class="toolbar-inner">
+      <div class="search-wrap">
+        <span class="search-icon">🔎</span>
+        <input type="text" id="search" placeholder="So'z yoki tarjimani qidiring..." autocomplete="off" />
+      </div>
+      <div class="filters">
+        <button class="chip active" data-filter="all">Hammasi</button>
+        <button class="chip" data-filter="learned">O'rganilgan</button>
+        <button class="chip" data-filter="notlearned">Qolgan</button>
+      </div>
+      <label class="autoplay">
+        <input type="checkbox" id="autoplay" /> Kartani ochganda avtomatik o'qish
+      </label>
+    </div>
+  </div>
+
+  <main id="cards" class="cards"></main>
+
+  <footer class="site-footer">
+    <p>Talaffuzni eshitish uchun 🔊 tugmasini bosing. So'zni yodlaganingizda "O'rgandim" tugmasini belgilang — progress brauzerda saqlanadi.</p>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
